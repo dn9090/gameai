@@ -23,18 +23,17 @@ namespace BlocksAI
 
 			board.PrintToConsole();
 
-
 			//DebugBlock();
 			//TestBlocking();
 
-			GameOne();
-			GameTwo();
-			GameThree();
+			//GameOne();
+			//GameTwo();
+			//GameThree();
+			GameFour();
 		}
 
 		static void DebugBlock()
 		{
-			
 			Game game = Game.Create();
 
 			for(int i = 0; i < 3; ++i)
@@ -46,12 +45,12 @@ namespace BlocksAI
 			}
 			
 
-			game.states[0] = new PlayState(8, 3);
-			game.states[1] = new PlayState(10, 5);
-			game.states[2] = new PlayState(28, 30);
+			game.states[0] = new PlayState(13, 6);
+			game.states[1] = new PlayState(17, 5);
+			game.states[2] = new PlayState(30, 31);
 			game.score[0] = 2;
 			game.score[1] = 2;
-			game.score[2] = 2;
+			game.score[2] = 1;
 
 			foreach(var state in game.states)
 			{
@@ -59,8 +58,8 @@ namespace BlocksAI
 				game.board[state.second] = Field.Stone;
 			}
 
-			game.board[27] = Field.Blocked;
-			game.board[17] = Field.Blocked;
+			game.board[28] = Field.Blocked;
+			game.board[32] = Field.Blocked;
 			game.board[11] = Field.Blocked;
 			//game.board[13] = Field.Blocked;
 
@@ -162,7 +161,7 @@ namespace BlocksAI
 			RandomAgent randAgent2 = new RandomAgent(1, 4000);
 			
 
-			for(int i = 0; i < 27; ++i)
+			for(int i = 0; i < 30; ++i)
 			{
 				Console.WriteLine("Turn: " + i % 3);
 
@@ -174,6 +173,45 @@ namespace BlocksAI
 					next = randAgent.Next(ref game);
 				if(i%3 == 1)
 					next = randAgent2.Next(ref game);
+
+				Console.WriteLine(next);
+				
+				if(next.isEmpty)
+					Console.WriteLine("...skip");
+				else
+					game.Play(i % 3, next);
+				game.PrintToConsole();
+			}
+		}
+
+		static void GameFour()
+		{
+			Console.WriteLine("##################################");
+			Console.WriteLine("####### GAME 4");
+			Console.WriteLine("##################################");
+
+
+			Game game = Game.Create();
+			game.Start();
+			game.PrintToConsole();
+
+			var smartAgent = new AIAgent(0, 0, 0, 8);
+			var dumbAgent = new AIAgent(1, 0, 0, 3);
+			var randAgent = new RandomAgent(2, 4000);
+			
+
+			for(int i = 0; i < 30; ++i)
+			{
+				Console.WriteLine("Turn: " + i % 3);
+
+				Move next = Move.Empty();
+
+				if(i%3 == 0)
+					next = smartAgent.Minimax(ref game);
+				if(i%3 == 1)
+					next = dumbAgent.Minimax(ref game);
+				if(i%3 == 2)
+					next = randAgent.Next(ref game);
 
 				Console.WriteLine(next);
 				

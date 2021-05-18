@@ -148,17 +148,17 @@ namespace BlocksAI
 				
 				var killTwo = KillTwoHeuristic(fFirst, fSecond);
 
-				if(killTwo != -1) { //Console.WriteLine("[Heuristic] Kill Two!");
+				if(killTwo != -1) { //Console.WriteLine("[Heuristic] Kill Two: " + i);
 					return killTwo; }
 
 				var killBorder = KillAtDeadEndHeuristic(game.board, fFirst);
 
-				if(killBorder != -1) { //Console.WriteLine("[Heuristic] Kill Dead End (A)!");
+				if(killBorder != -1) { //Console.WriteLine("[Heuristic] Kill Dead End (A): " + i);
 					return killBorder; }
 
 				killBorder = KillAtDeadEndHeuristic(game.board, fSecond);
 
-				if(killBorder != -1) { //Console.WriteLine("[Heuristic] Kill Dead End (B)!");
+				if(killBorder != -1) { //Console.WriteLine("[Heuristic] Kill Dead End (B): " + i);
 					return killBorder; }
 
 				if(score > highestScore)
@@ -246,12 +246,12 @@ namespace BlocksAI
 			// @Todo: We need to check if the free field has neighbor
 			// fields with stones on it, because then the kill mechanic needs to kick in.
 
-			if(board.GetFreeFieldCount(n) == 1)
+			if(board.GetFreeFieldCount(n) <= 1)
 				return free[1];
 
 			n = board.GetNeighbors(free[1], neighbors);
 			
-			if(board.GetFreeFieldCount(n) == 1)
+			if(board.GetFreeFieldCount(n) <= 1)
 				return free[0];
 
 			return -1;

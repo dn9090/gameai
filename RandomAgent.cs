@@ -37,6 +37,10 @@ namespace BlocksAI
 			var s = this.random.Next(freeSecond.Length);
 
 			var state = new PlayState(freeFirst.Length > 0 ? freeFirst[f] : myPos.first, freeSecond.Length > 0 ? freeSecond[s] : myPos.second);
+
+			if(state.first == state.second)
+				state.second = myPos.second;
+			
 			var block = -1;
 
 			Turn.Play(game.board, game.states[this.player], state);
