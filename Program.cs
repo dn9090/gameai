@@ -29,6 +29,7 @@ namespace BlocksAI
 
 			GameOne();
 			GameTwo();
+			GameThree();
 		}
 
 		static void DebugBlock()
@@ -133,6 +134,45 @@ namespace BlocksAI
 				if(i%3 == 1)
 					next = randAgent.Next(ref game);
 				if(i%3 == 2)
+					next = randAgent2.Next(ref game);
+
+				Console.WriteLine(next);
+				
+				if(next.isEmpty)
+					Console.WriteLine("...skip");
+				else
+					game.Play(i % 3, next);
+				game.PrintToConsole();
+			}
+		}
+
+		static void GameThree()
+		{
+			Console.WriteLine("##################################");
+			Console.WriteLine("####### GAME 3");
+			Console.WriteLine("##################################");
+
+
+			Game game = Game.Create();
+			game.Start();
+			game.PrintToConsole();
+
+			AIAgent smartAgent = new AIAgent(2, 0, 0, 9);
+			RandomAgent randAgent = new RandomAgent(0, 1000);
+			RandomAgent randAgent2 = new RandomAgent(1, 4000);
+			
+
+			for(int i = 0; i < 27; ++i)
+			{
+				Console.WriteLine("Turn: " + i % 3);
+
+				Move next = Move.Empty();
+
+				if(i%3 == 2)
+					next = smartAgent.Minimax(ref game);
+				if(i%3 == 0)
+					next = randAgent.Next(ref game);
+				if(i%3 == 1)
 					next = randAgent2.Next(ref game);
 
 				Console.WriteLine(next);
