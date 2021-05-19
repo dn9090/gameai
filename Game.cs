@@ -47,26 +47,26 @@ namespace BlocksAI
 			}
 		}
 
-		public PlayState Play(int player, Move move)
+		public PlayState Play(Move move)
 		{
-			var state = this.states[player];
-			this.states[player] = Turn.Play(this.board, state, move);
-			this.scoreSum -= this.score[player];
-			this.score[player] += state.first != this.states[player].first ? 1 : 0;
-			this.score[player] += state.second != this.states[player].second ? 1 : 0;
-			this.scoreSum += this.score[player];
+			var state = this.states[move.player];
+			this.states[move.player] = Turn.Play(this.board, state, move);
+			this.scoreSum -= this.score[move.player];
+			this.score[move.player] += state.first != this.states[move.player].first ? 1 : 0;
+			this.score[move.player] += state.second != this.states[move.player].second ? 1 : 0;
+			this.scoreSum += this.score[move.player];
 
 			return state;
 		}
 
-		public void Withdraw(int player, PlayState from, Move move)
+		public void Withdraw(PlayState from, Move move)
 		{
-			var state = this.states[player];
-			this.states[player] = Turn.Withdraw(this.board, from, move);
-			this.scoreSum -= this.score[player];
-			this.score[player] -= state.first != this.states[player].first ? 1 : 0;
-			this.score[player] -= state.second != this.states[player].second ? 1 : 0;
-			this.scoreSum += this.score[player];
+			var state = this.states[move.player];
+			this.states[move.player] = Turn.Withdraw(this.board, from, move);
+			this.scoreSum -= this.score[move.player];
+			this.score[move.player] -= state.first != this.states[move.player].first ? 1 : 0;
+			this.score[move.player] -= state.second != this.states[move.player].second ? 1 : 0;
+			this.scoreSum += this.score[move.player];
 		}
 
 		public void PrintToConsole()
@@ -82,6 +82,18 @@ namespace BlocksAI
 
 		public int NextPlayer(int player) => ++player >= this.states.Length ? 0 : player;
 
+		public int PrevPlayer(int player) => --player < 0 ? this.states.Length - 1 : player;
+
+		public int GetPlacementInverse(int player)
+		{
+			var placement = 3;
+			var score = this.score[player];
+			var next = player;
+			while((next = NextPlayer(next)) != player)
+				placement -= this.score[next] > score ? 1 : 0;
+			return placement;
+		}
+
 		public Span<int> GetOpponents(int player) => new Span<int>(this.opponents, player * 2, this.states.Length - 1);
 	}
 
@@ -89,26 +101,30 @@ namespace BlocksAI
 	{
 		public bool isEmpty => first == -1 || second == -1 || block == -1;
 
+		public int player;
+
 		public int first;
 
 		public int second;
 
 		public int block;
 
-		public Move(int first, int second, int block)
+		public Move(int player, int first, int second, int block)
 		{
 			this.first = first;
 			this.second = second;
 			this.block = block;
+			this.player = player;
 		}
 
-		public Move(PlayState state, int block) : this(state.first, state.second, block)
+
+		public Move(int player, PlayState state, int block) : this(player, state.first, state.second, block)
 		{
 		}
 
 		public override string ToString() => $"Move<({first},{second}):{block}>";
 	
-		public static Move Empty() => new Move(-1, -1, -1);
+		public static Move Empty() => new Move(-1, -1, -1, -1);
 	}
 
 	public struct PlayState

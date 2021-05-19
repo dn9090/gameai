@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
@@ -7,6 +8,10 @@ namespace BlocksAI
 {
 	public struct AIAgent
 	{
+		public float gamma;
+
+		public float omega;
+
 		public int alpha;
 
 		public int beta;
@@ -15,7 +20,7 @@ namespace BlocksAI
 
 		public int player;
 
-		public Move nextMove;
+		public ConcurrentStack<Move> moves;
 
 		public AIAgent(int player, int alpha, int beta, int maxDepth)
 		{
@@ -23,18 +28,32 @@ namespace BlocksAI
 			this.alpha = alpha;
 			this.beta = beta;
 			this.maxDepth = maxDepth;
-			this.nextMove = Move.Empty();
+			this.moves = new ConcurrentStack<Move>();
+			this.gamma = 0.33f;
+			this.omega = 0.5f;
+		}
+
+		public void MinimaxToStack(ref Game game)
+		{
+			this.moves.Clear();
+			Minimax(this.player, ref game, maxDepth);
 		}
 
 		public Move Minimax(ref Game game)
 		{
-			this.nextMove = Move.Empty();
+			this.moves.Clear();
+
 			Minimax(this.player, ref game, maxDepth);
-			return this.nextMove;
+
+			if(this.moves.TryPop(out Move move))
+				return move;
+
+			return Move.Empty();
 		}
 
-		public float CalculateScore(int player, ref Game game, Span<int> freeFirst, Span<int> freeSecond) =>
-			(freeFirst.Length + freeSecond.Length) * ((float)game.score[this.player] / ((float)game.scoreSum + 0.001f));
+		public float CalculateScore(ref Game game) =>
+			this.gamma * game.GetPlacementInverse(this.player) + ((float)game.score[this.player] / ((float)game.scoreSum + 0.001f));
+			 
 
 		public float Minimax(int player, ref Game game, int depth)
 		{
@@ -49,32 +68,33 @@ namespace BlocksAI
 
 			// Exit if depth is reached or no free fields are available.
 			if(depth == 0 || freeFirst.Length + freeSecond.Length == 0)
-				return CalculateScore(player, ref game, freeFirst, freeSecond);
+				return this.player == player ? CalculateScore(ref game) : -CalculateScore(ref game);
 
 			var opponents = game.GetOpponents(player);
 
 			float maxScore = float.MinValue; 
 
-			for(int i = 0; i < freeFirst.Length; i++)
+			
+			for(int i = 0; i < freeFirst.Length; ++i)
+			for(int j = 0; j < freeSecond.Length; ++j)
 			{
-				for(int j = 0; j < freeSecond.Length; j++)
+				if(freeFirst[i] == freeSecond[j])
+					continue;
+
+				var state = new PlayState(freeFirst[i], freeSecond[j]);
+				var score = Minimax(player, ref game, opponents, state, depth, out Move move);
+
+				if(score > maxScore)
 				{
-					if(freeFirst[i] == freeSecond[j])
-						continue;
-
-					var state = new PlayState(freeFirst[i], freeSecond[j]);
-					var score = Minimax(player, ref game, opponents, state, depth, out Move move);
-
-					if(score > maxScore)
-					{
-						maxScore = score;
-						if(depth == maxDepth)
-							this.nextMove = move;
-					}
+					maxScore = score;
+					if(depth == maxDepth)
+						this.moves.Push(move);
 				}
 			}
+			
 
-			for(int i = 0; i < freeFirst.Length; i++)
+			// Second loop: Move only the first stone.
+			for(int i = 0; i < freeFirst.Length; ++i)
 			{
 				var state = new PlayState(freeFirst[i], game.states[player].second);
 				var score = Minimax(player, ref game, opponents, state, depth, out Move move);
@@ -83,11 +103,12 @@ namespace BlocksAI
 				{
 					maxScore = score;
 					if(depth == maxDepth)
-						this.nextMove = move;
+						this.moves.Push(move);
 				}
 			}
 
-			for(int i = 0; i < freeSecond.Length; i++)
+			// Third loop: Move only the second stone.
+			for(int i = 0; i < freeSecond.Length; ++i)
 			{
 				var state = new PlayState(game.states[player].first, freeSecond[i]);
 				var score = Minimax(player, ref game, opponents, state, depth, out Move move);
@@ -96,9 +117,12 @@ namespace BlocksAI
 				{
 					maxScore = score;
 					if(depth == maxDepth)
-						this.nextMove = move;
+						this.moves.Push(move);
 				}
 			}
+
+			if(depth == maxDepth)
+				Console.WriteLine("### MAX: " + maxScore);
 
 			return maxScore;
 		}
@@ -109,25 +133,20 @@ namespace BlocksAI
 			var block = FindBlockingField(ref game, opponents);
 			Turn.Withdraw(game.board, game.states[player], state);
 
-			move = new Move(state, block);
-
-			var nextPlayer = game.NextPlayer(player);
+			move = new Move(player, state, block);
 			
-			var oldState = game.Play(player, move);
+			var nextPlayer = game.NextPlayer(player);
+			var oldState = game.Play(move);
 			var score = Minimax(nextPlayer, ref game, depth - 1);
-			game.Withdraw(player, oldState, move);
+			game.Withdraw(oldState, move);
 
-			return this.player == player ? score : -score;
+			return this.player == player || nextPlayer == this.player ? -score : score;
 		}
 
 		public static int FindBlockingField(ref Game game, Span<int> opponents)
 		{
-			Span<int> neighbors = stackalloc int[opponents.Length * 3];
-			Span<int> free = stackalloc int[opponents.Length * 3];
-
-			// 1. heuristic: Killing move when only one field is left.
-			// 2. heuristic: Killing move in two, when the opponent stones block themself.
-			// 3. heuristic: Defense blocking.
+			Span<int> neighbors = stackalloc int[6];
+			Span<int> free = stackalloc int[6];
 
 			var highestScore = int.MinValue;
 			var scoreBlock = -1;
@@ -173,6 +192,7 @@ namespace BlocksAI
 
 		public static int SomeFreeBlock(Board board)
 		{
+			// Fallback if no heuristic matches.
 			for(int i = 0; i < board.fields.Length; ++i)
 				if(board.fields[i] == Field.Free)
 					return i;
@@ -181,6 +201,9 @@ namespace BlocksAI
 
 		public static int MinMovementSpaceHeuristic(Span<int> freeFirst, Span<int> freeSecond)
 		{
+			// This heuristic tries to minimize the available movement space
+			// for the stone with the lowest number of free fields.
+
 			if(freeFirst.Length == 0)
 				return freeSecond[0];
 			
@@ -242,9 +265,6 @@ namespace BlocksAI
 			
 			Span<int> neighbors = stackalloc int[3];
 			var n = board.GetNeighbors(free[0], neighbors);
-
-			// @Todo: We need to check if the free field has neighbor
-			// fields with stones on it, because then the kill mechanic needs to kick in.
 
 			if(board.GetFreeFieldCount(n) <= 1)
 				return free[1];

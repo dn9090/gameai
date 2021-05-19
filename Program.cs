@@ -14,7 +14,7 @@ namespace BlocksAI
 			//PrintNeighbors(board);
 
 			var state = new PlayState(15, 8);
-			var move = new Move(14, 7, 12);
+			var move = new Move(-1, 14, 7, 12);
 			var played = Turn.Play(board, state, move);
 
 			board.PrintToConsole();
@@ -26,11 +26,34 @@ namespace BlocksAI
 			//DebugBlock();
 			//TestBlocking();
 
-			//GameOne();
-			//GameTwo();
-			//GameThree();
+			GameOne();
+			GameTwo();
+			GameThree();
 			GameFour();
 		}
+		
+		static void ConnectAndPlay()
+		{
+			// Connect...
+
+			AIClient client = new AIClient(new AIAgent(0, 0, 0, 0));
+			client.Initialize();
+
+			while(true)
+			{
+				Move move = new Move();
+				while((move = new Move()).player != 1)
+				{
+
+				}
+
+				Move next = client.EvaluateNextMove(1000);
+				// send
+				client.WaitForThread();
+			}
+		}
+
+
 
 		static void DebugBlock()
 		{
@@ -79,13 +102,13 @@ namespace BlocksAI
 			game.PrintToConsole();
 
 			RandomAgent randAgent = new RandomAgent(0, 1000);
-			AIAgent smartAgent = new AIAgent(1, 0, 0, 8);
-			AIAgent dumbAgent = new AIAgent(2, 0, 0, 2);
+			AIAgent smartAgent = new AIAgent(1, 0, 0, 9);
+			AIAgent dumbAgent = new AIAgent(2, 0, 0, 3);
 			
 
-			for(int i = 0; i < 15; ++i)
+			for(int i = 0; i < 18; ++i)
 			{
-				Console.WriteLine("Turn: " + i % 3);
+				//Console.WriteLine("Turn: " + i % 3);
 
 				Move next = Move.Empty();
 
@@ -96,14 +119,15 @@ namespace BlocksAI
 				if(i%3 == 2)
 					next = dumbAgent.Minimax(ref game);
 
-				Console.WriteLine(next);
+				//Console.WriteLine(next);
 				
 				if(next.isEmpty)
 					Console.WriteLine("...skip");
 				else
-					game.Play(i % 3, next);
-				game.PrintToConsole();
+					game.Play(next);
 			}
+
+			game.PrintToConsole();
 		}
 
 		static void GameTwo()
@@ -117,14 +141,14 @@ namespace BlocksAI
 			game.Start();
 			game.PrintToConsole();
 
-			AIAgent smartAgent = new AIAgent(0, 0, 0, 8);
+			AIAgent smartAgent = new AIAgent(0, 0, 0, 9);
 			RandomAgent randAgent = new RandomAgent(1, 1000);
 			RandomAgent randAgent2 = new RandomAgent(2, 4000);
 			
 
-			for(int i = 0; i < 15; ++i)
+			for(int i = 0; i < 18; ++i)
 			{
-				Console.WriteLine("Turn: " + i % 3);
+				//Console.WriteLine("Turn: " + i % 3);
 
 				Move next = Move.Empty();
 
@@ -135,14 +159,15 @@ namespace BlocksAI
 				if(i%3 == 2)
 					next = randAgent2.Next(ref game);
 
-				Console.WriteLine(next);
+				//Console.WriteLine(next);
 				
 				if(next.isEmpty)
 					Console.WriteLine("...skip");
 				else
-					game.Play(i % 3, next);
-				game.PrintToConsole();
+					game.Play(next);
 			}
+
+			game.PrintToConsole();
 		}
 
 		static void GameThree()
@@ -156,14 +181,13 @@ namespace BlocksAI
 			game.Start();
 			game.PrintToConsole();
 
-			AIAgent smartAgent = new AIAgent(2, 0, 0, 9);
 			RandomAgent randAgent = new RandomAgent(0, 1000);
 			RandomAgent randAgent2 = new RandomAgent(1, 4000);
-			
-
-			for(int i = 0; i < 30; ++i)
+			AIAgent smartAgent = new AIAgent(2, 0, 0, 9);
+		
+			for(int i = 0; i < 36; ++i)
 			{
-				Console.WriteLine("Turn: " + i % 3);
+				//Console.WriteLine("Turn: " + i % 3);
 
 				Move next = Move.Empty();
 
@@ -174,14 +198,15 @@ namespace BlocksAI
 				if(i%3 == 1)
 					next = randAgent2.Next(ref game);
 
-				Console.WriteLine(next);
+				//Console.WriteLine(next);
 				
 				if(next.isEmpty)
 					Console.WriteLine("...skip");
 				else
-					game.Play(i % 3, next);
-				game.PrintToConsole();
+					game.Play(next);
 			}
+
+			game.PrintToConsole();
 		}
 
 		static void GameFour()
@@ -202,7 +227,7 @@ namespace BlocksAI
 
 			for(int i = 0; i < 30; ++i)
 			{
-				Console.WriteLine("Turn: " + i % 3);
+				//Console.WriteLine("Turn: " + i % 3);
 
 				Move next = Move.Empty();
 
@@ -213,14 +238,15 @@ namespace BlocksAI
 				if(i%3 == 2)
 					next = randAgent.Next(ref game);
 
-				Console.WriteLine(next);
+				//Console.WriteLine(next);
 				
 				if(next.isEmpty)
 					Console.WriteLine("...skip");
 				else
-					game.Play(i % 3, next);
-				game.PrintToConsole();
+					game.Play(next);
 			}
+
+			game.PrintToConsole();
 		}
 
 		static void TestBlocking()
@@ -245,7 +271,7 @@ namespace BlocksAI
 
 			Console.WriteLine("Block at: " + blockAt);
 		
-			game.states[opponents[0]] = Turn.Play(board, game.states[opponents[0]], new Move(14, 8, 16));
+			game.states[opponents[0]] = Turn.Play(board, game.states[opponents[0]], new Move(-1, 14, 8, 16));
 			board[blockAt] = Field.Blocked;
 
 			board.PrintToConsole();
@@ -254,7 +280,7 @@ namespace BlocksAI
 
 			Console.WriteLine("Block at: " + blockAt);
 
-			game.states[opponents[0]] = Turn.Play(board, game.states[opponents[0]], new Move(15, 8, 18));
+			game.states[opponents[0]] = Turn.Play(board, game.states[opponents[0]], new Move(-1, 15, 8, 18));
 			board[blockAt] = Field.Blocked;
 
 			board.PrintToConsole();

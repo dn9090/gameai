@@ -68,7 +68,7 @@ namespace BlocksAI
 
 			Turn.Withdraw(game.board, game.states[this.player], state);
 
-			return new Move(state, block);
+			return new Move(this.player, state, block);
 		}
 	}
 }

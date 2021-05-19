@@ -146,6 +146,23 @@ namespace BlocksAI
 			return buffer.Slice(0, count);
 		}
 
+		public int GetFreeNeighborCount(PlayState state)
+		{
+			Span<int> neighbors = stackalloc int[6];
+
+			var nFirst = GetNeighbors(state.first, neighbors);
+			var nSecond = GetNeighbors(state.second, neighbors.Slice(3));
+			var count = 0;
+
+			for(int i = 0; i < nFirst.Length; ++i)
+				count += this.fields[nFirst[i]] == Field.Free ? 1 : 0;
+		
+			for(int i = 0; i < nSecond.Length; ++i)
+				count += this.fields[nSecond[i]] == Field.Free ? 1 : 0;
+
+			return count;
+		}
+
 		public int GetFreeFieldCount(Span<int> fields)
 		{
 			int count = 0;
