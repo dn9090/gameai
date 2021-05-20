@@ -33,25 +33,6 @@ namespace BlocksAI
 			GameFive();
 		}
 		
-		static void ConnectAndPlay()
-		{
-			// Connect...
-
-			while(true)
-			{
-				Move move = new Move();
-				while((move = new Move()).player != 1)
-				{
-
-				}
-
-				// send
-
-			}
-		}
-
-
-
 		static void DebugBlock()
 		{
 			Game game = Game.Create();
