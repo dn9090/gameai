@@ -30,13 +30,14 @@ namespace BlocksAI
 			GameTwo();
 			GameThree();
 			GameFour();
+			GameFive();
 		}
 		
 		static void ConnectAndPlay()
 		{
 			// Connect...
 
-			AIClient client = new AIClient(new AIAgent(0, 0, 0, 0));
+			AIClient client = new AIClient(new AIAgent(0, 0));
 			client.Initialize();
 
 			while(true)
@@ -87,7 +88,7 @@ namespace BlocksAI
 			//game.board[13] = Field.Blocked;
 
 			game.PrintToConsole();
-			Console.WriteLine(AIAgent.FindBlockingField(ref game, game.GetOpponents(0)));
+			Console.WriteLine(AIAgent.GetBlockingField(ref game, game.GetOpponents(0)));
 		}
 
 		static void GameOne()
@@ -99,14 +100,14 @@ namespace BlocksAI
 
 			Game game = Game.Create();
 			game.Start();
-			game.PrintToConsole();
+			//game.PrintToConsole();
 
 			RandomAgent randAgent = new RandomAgent(0, 1000);
-			AIAgent smartAgent = new AIAgent(1, 0, 0, 9);
-			AIAgent dumbAgent = new AIAgent(2, 0, 0, 3);
+			AIAgent smartAgent = new AIAgent(1, 3);
+			AIAgent dumbAgent = new AIAgent(2, 11);
 			
 
-			for(int i = 0; i < 18; ++i)
+			for(int i = 0; i < 22; ++i)
 			{
 				//Console.WriteLine("Turn: " + i % 3);
 
@@ -121,9 +122,7 @@ namespace BlocksAI
 
 				//Console.WriteLine(next);
 				
-				if(next.isEmpty)
-					Console.WriteLine("...skip");
-				else
+				if(!next.isEmpty)
 					game.Play(next);
 			}
 
@@ -139,14 +138,14 @@ namespace BlocksAI
 
 			Game game = Game.Create();
 			game.Start();
-			game.PrintToConsole();
+			//game.PrintToConsole();
 
-			AIAgent smartAgent = new AIAgent(0, 0, 0, 9);
+			AIAgent smartAgent = new AIAgent(0, 9);
 			RandomAgent randAgent = new RandomAgent(1, 1000);
 			RandomAgent randAgent2 = new RandomAgent(2, 4000);
 			
 
-			for(int i = 0; i < 18; ++i)
+			for(int i = 0; i < 21; ++i)
 			{
 				//Console.WriteLine("Turn: " + i % 3);
 
@@ -161,9 +160,7 @@ namespace BlocksAI
 
 				//Console.WriteLine(next);
 				
-				if(next.isEmpty)
-					Console.WriteLine("...skip");
-				else
+				if(!next.isEmpty)
 					game.Play(next);
 			}
 
@@ -179,11 +176,11 @@ namespace BlocksAI
 
 			Game game = Game.Create();
 			game.Start();
-			game.PrintToConsole();
+			//game.PrintToConsole();
 
 			RandomAgent randAgent = new RandomAgent(0, 1000);
 			RandomAgent randAgent2 = new RandomAgent(1, 4000);
-			AIAgent smartAgent = new AIAgent(2, 0, 0, 9);
+			AIAgent smartAgent = new AIAgent(2, 9);
 		
 			for(int i = 0; i < 36; ++i)
 			{
@@ -200,9 +197,7 @@ namespace BlocksAI
 
 				//Console.WriteLine(next);
 				
-				if(next.isEmpty)
-					Console.WriteLine("...skip");
-				else
+				if(!next.isEmpty)
 					game.Play(next);
 			}
 
@@ -218,10 +213,10 @@ namespace BlocksAI
 
 			Game game = Game.Create();
 			game.Start();
-			game.PrintToConsole();
+			//game.PrintToConsole();
 
-			var smartAgent = new AIAgent(0, 0, 0, 8);
-			var dumbAgent = new AIAgent(1, 0, 0, 3);
+			var smartAgent = new AIAgent(0, 8);
+			var dumbAgent = new AIAgent(1, 3);
 			var randAgent = new RandomAgent(2, 4000);
 			
 
@@ -240,9 +235,45 @@ namespace BlocksAI
 
 				//Console.WriteLine(next);
 				
-				if(next.isEmpty)
-					Console.WriteLine("...skip");
-				else
+				if(!next.isEmpty)
+					game.Play(next);
+			}
+
+			game.PrintToConsole();
+		}
+
+		static void GameFive()
+		{
+			Console.WriteLine("##################################");
+			Console.WriteLine("####### GAME 5");
+			Console.WriteLine("##################################");
+
+
+			Game game = Game.Create();
+			game.Start();
+			//game.PrintToConsole();
+
+			var dumbAgent = new AIAgent(0, 3);
+			var randAgent = new RandomAgent(1, 7000);
+			var smartAgent = new AIAgent(2, 15);
+			
+
+			for(int i = 0; i < 30; ++i)
+			{
+				//Console.WriteLine("Turn: " + i % 3);
+
+				Move next = Move.Empty();
+
+				if(i%3 == 2)
+					next = smartAgent.Minimax(ref game);
+				if(i%3 == 0)
+					next = dumbAgent.Minimax(ref game);
+				if(i%3 == 1)
+					next = randAgent.Next(ref game);
+
+				//Console.WriteLine(next);
+				
+				if(!next.isEmpty)
 					game.Play(next);
 			}
 
@@ -260,14 +291,14 @@ namespace BlocksAI
 			var opponents = game.GetOpponents(1);
 
 			board.PrintToConsole();
-			var blockAt = AIAgent.FindBlockingField(ref game, opponents);
+			var blockAt = AIAgent.GetBlockingField(ref game, opponents);
 
 			Console.WriteLine("Block at: " + blockAt);
 
 			board[23] = Field.Blocked;
 
 			board.PrintToConsole();
-			blockAt= AIAgent.FindBlockingField(ref game, opponents);
+			blockAt= AIAgent.GetBlockingField(ref game, opponents);
 
 			Console.WriteLine("Block at: " + blockAt);
 		
@@ -276,7 +307,7 @@ namespace BlocksAI
 
 			board.PrintToConsole();
 
-			blockAt= AIAgent.FindBlockingField(ref game, opponents);
+			blockAt= AIAgent.GetBlockingField(ref game, opponents);
 
 			Console.WriteLine("Block at: " + blockAt);
 
@@ -285,7 +316,7 @@ namespace BlocksAI
 
 			board.PrintToConsole();
 
-			blockAt= AIAgent.FindBlockingField(ref game, opponents);
+			blockAt= AIAgent.GetBlockingField(ref game, opponents);
 
 			Console.WriteLine("Block at: " + blockAt);
 
@@ -294,7 +325,7 @@ namespace BlocksAI
 
 			board.PrintToConsole();
 
-			blockAt= AIAgent.FindBlockingField(ref game, opponents);
+			blockAt= AIAgent.GetBlockingField(ref game, opponents);
 
 			Console.WriteLine("Block at: " + blockAt);
 		}

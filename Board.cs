@@ -49,6 +49,8 @@ namespace BlocksAI
 
 		public Position[] coordinates;
 
+		public int[] neighbors;
+
 		public int size;
 
 		public Board(int size)
@@ -56,6 +58,7 @@ namespace BlocksAI
 			this.size = size;
 			this.fields = new Field[NumberOfFields(this.size)];
 			this.coordinates = new Position[this.fields.Length];
+			this.neighbors = new int[this.fields.Length * 3];
 
 			// Initialize blocked fields.
 			this.fields[0] = Field.Blocked;
@@ -66,6 +69,15 @@ namespace BlocksAI
 			for(int y = 0; y < this.size; ++y)
 			for(int x = RowSizeOf(y) - 1; x >= 0; --x)
 				this.coordinates[IndexOf(x, y)] = new Position(x, y);
+
+			//Initialize neighbors.
+			var buffer = new Span<int>(this.neighbors, 0, this.neighbors.Length);
+			for(int i = 0; i < this.fields.Length; ++i)
+			{
+				var n = GetNeighbors(i, buffer.Slice(i * 3));
+				for(int j = n.Length; j < 3; ++j)
+					buffer[i * 3 + j] = -1;
+			}
 		}
 
 		public Board Copy()
@@ -146,22 +158,20 @@ namespace BlocksAI
 			return buffer.Slice(0, count);
 		}
 
-		public int GetFreeNeighborCount(PlayState state)
+		public int GetFreeNeighborCount(int index)
 		{
-			Span<int> neighbors = stackalloc int[6];
-
-			var nFirst = GetNeighbors(state.first, neighbors);
-			var nSecond = GetNeighbors(state.second, neighbors.Slice(3));
+			var start = Board.NeighborStartingIndex(index);
+			var end = Board.NeighborEndingIndex(index);
 			var count = 0;
 
-			for(int i = 0; i < nFirst.Length; ++i)
-				count += this.fields[nFirst[i]] == Field.Free ? 1 : 0;
-		
-			for(int i = 0; i < nSecond.Length; ++i)
-				count += this.fields[nSecond[i]] == Field.Free ? 1 : 0;
+			for(int i = start; i < end && this.neighbors[i] != -1; ++i)
+				if(this.fields[this.neighbors[i]] == Field.Free)
+					++count;
 
 			return count;
 		}
+
+		public int GetFreeNeighborCount(PlayState state) => GetFreeNeighborCount(state.first) + GetFreeNeighborCount(state.second);
 
 		public int GetFreeFieldCount(Span<int> fields)
 		{
@@ -182,5 +192,9 @@ namespace BlocksAI
 		public static int RowSizeOf(int y) => 1 + (y * 2);
 		
 		public static int IndexOf(int x, int y) => (y * y) + x;
+
+		public static int NeighborStartingIndex(int index) => index * 3;
+
+		public static int NeighborEndingIndex(int index) => NeighborStartingIndex(index) + 3;
 	}
 }

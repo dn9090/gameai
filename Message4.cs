@@ -1,5 +1,7 @@
 using System;
 using System.Numerics;
+using System.Net;
+using System.Net.Sockets;
 
 namespace BlocksAI
 {
@@ -17,9 +19,13 @@ namespace BlocksAI
 
 		public ClientSettings ToClientSettings() => new ClientSettings(a, b, c);
 
-		public static Message4 Read()
+		public unsafe static Message4 Read(NetworkStream stream)
 		{
-			return new Message4();
+			byte* bytes = stackalloc byte[sizeof(Message4)];
+
+			stream.Read(new Span<byte>(bytes, sizeof(Message4)));
+
+			return *((Message4*)bytes);
 		}
 	}
 
