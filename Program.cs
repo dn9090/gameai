@@ -37,9 +37,6 @@ namespace BlocksAI
 		{
 			// Connect...
 
-			AIClient client = new AIClient(new AIAgent(0, 0));
-			client.Initialize();
-
 			while(true)
 			{
 				Move move = new Move();
@@ -48,9 +45,8 @@ namespace BlocksAI
 
 				}
 
-				Move next = client.EvaluateNextMove(1000);
 				// send
-				client.WaitForThread();
+
 			}
 		}
 
@@ -103,8 +99,8 @@ namespace BlocksAI
 			//game.PrintToConsole();
 
 			RandomAgent randAgent = new RandomAgent(0, 1000);
-			AIAgent smartAgent = new AIAgent(1, 3);
-			AIAgent dumbAgent = new AIAgent(2, 11);
+			AIAgent dumbAgent = new AIAgent(1, 3);
+			AIAgent smartAgent = new AIAgent(2, 11);
 			
 
 			for(int i = 0; i < 22; ++i)
@@ -116,9 +112,9 @@ namespace BlocksAI
 				if(i%3 == 0)
 					next = randAgent.Next(ref game);
 				if(i%3 == 1)
-					next = smartAgent.Minimax(ref game);
-				if(i%3 == 2)
 					next = dumbAgent.Minimax(ref game);
+				if(i%3 == 2)
+					next = smartAgent.Minimax(ref game);
 
 				//Console.WriteLine(next);
 				
@@ -215,10 +211,9 @@ namespace BlocksAI
 			game.Start();
 			//game.PrintToConsole();
 
-			var smartAgent = new AIAgent(0, 8);
+			var smartAgent = new AIAgent(0, 1000, 2000);
 			var dumbAgent = new AIAgent(1, 3);
 			var randAgent = new RandomAgent(2, 4000);
-			
 
 			for(int i = 0; i < 30; ++i)
 			{
@@ -232,7 +227,6 @@ namespace BlocksAI
 					next = dumbAgent.Minimax(ref game);
 				if(i%3 == 2)
 					next = randAgent.Next(ref game);
-
 				//Console.WriteLine(next);
 				
 				if(!next.isEmpty)

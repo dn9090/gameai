@@ -16,29 +16,33 @@ namespace BlocksAI
 
 		public int player;
 
+		public int timeout;
+
 		public Stopwatch stopwatch;
 
 		public ConcurrentStack<Move> moves;
 
-		public AIAgent(int player, int maxDepth)
+		public AIAgent(int player, int maxDepth, int timeout)
 		{
 			this.player = player;
 			this.maxDepth = maxDepth;
 			this.stopwatch = new Stopwatch();
 			this.moves = new ConcurrentStack<Move>();
-			this.gamma = 0.5f;
-			this.omega = 0.5f;
+			this.gamma = 6f;
+			this.omega = 1f;
+			this.timeout = timeout;
 		}
 
-		public void MinimaxToStack(ref Game game)
+		public AIAgent(int player, int maxDepth) : this(player, maxDepth, -1)
 		{
-			this.moves.Clear();
-			Max(ref game, maxDepth, float.MinValue, float.MaxValue);
 		}
 
 		public Move Minimax(ref Game game)
 		{
-			MinimaxToStack(ref game);
+			this.moves.Clear();
+			this.stopwatch.Restart();
+
+			Max(ref game, maxDepth, float.MinValue, float.MaxValue);
 
 			if(this.moves.TryPop(out Move move))
 				return move;
@@ -50,7 +54,7 @@ namespace BlocksAI
 			CalculateScore(ref game, game.board.GetFreeNeighborCount(game.states[this.player]));
 
 		public float CalculateScore(ref Game game, int free) =>
-			free * this.gamma + ((float)game.score[this.player] / ((float)game.scoreSum + 0.001f));
+			this.gamma * (free / 6) + this.omega * ((float)game.score[this.player] / ((float)game.scoreSum + 0.001f));
  
 		public float Max(ref Game game, int depth, float alpha, float beta)
 		{
@@ -67,6 +71,9 @@ namespace BlocksAI
 
 			foreach(var state in GetPlayStates(game.board, currentState))
 			{
+				if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
+					return maxScore;
+
 				Turn.Play(game.board, game.states[player], state);
 				var block = GetBlockingField(ref game, opponents);
 				Turn.Withdraw(game.board, game.states[player], state);
@@ -104,6 +111,9 @@ namespace BlocksAI
 		
 			foreach(var state in GetPlayStates(game.board, currentState))
 			{
+				if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
+					return minScore;
+
 				Turn.Play(game.board, game.states[player], state);
 				var block = GetBlockingField(ref game, opponents);
 				Turn.Withdraw(game.board, game.states[player], state);
