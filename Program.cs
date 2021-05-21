@@ -8,6 +8,9 @@ namespace BlocksAI
 	{
 		static void Main(string[] args)
 		{
+			ConnectAndPlay(new AIAgent(10, 6f, 1f), "192.168.0.31", 55555, count: 3);
+
+			/*
 			var board = new Board(6);
 			board.PrintToConsole();
 
@@ -23,14 +26,33 @@ namespace BlocksAI
 
 			board.PrintToConsole();
 
+			*/
+
+
 			//DebugBlock();
 			//TestBlocking();
 
-			GameOne();
-			GameTwo();
-			GameThree();
-			GameFour();
-			GameFive();
+			//GameOne();
+			//GameTwo();
+			//GameThree();
+			//GameFour();
+			//GameFive();
+
+			//GameFromServer();
+		}
+
+		static void ConnectAndPlay(AIAgent agent, string ip, int port, int count = 1)
+		{
+			var clients = new Client[count];
+
+			for(int i = 0; i < clients.Length; ++i)
+				clients[i] = new Client(agent, true);
+
+			foreach(var client in clients)
+				client.Connect(ip, port++);
+
+			foreach(var client in clients)
+				client.WaitForDisconnect();
 		}
 		
 		static void DebugBlock()
@@ -67,6 +89,44 @@ namespace BlocksAI
 			game.PrintToConsole();
 			Console.WriteLine(AIAgent.GetBlockingField(ref game, game.GetOpponents(0)));
 		}
+
+		static void GameFromServer()
+		{
+			Console.WriteLine("##################################");
+			Console.WriteLine("####### GAME 1");
+			Console.WriteLine("##################################");
+
+
+			Game game = Game.Create();
+			game.Start();
+			//game.PrintToConsole();
+
+			AIAgent a = new AIAgent(0, 10, -1);
+			AIAgent b = new AIAgent(1, 10, -1);
+			AIAgent c = new AIAgent(2, 10, -1);
+
+			for(int i = 0; i < 39; ++i)
+			{
+				//Console.WriteLine("Turn: " + i % 3);
+
+				Move next = Move.Empty();
+
+				if(i%3 == 0)
+					next = a.Minimax(ref game);
+				if(i%3 == 1)
+					next = b.Minimax(ref game);
+				if(i%3 == 2)
+					next = c.Minimax(ref game);
+
+				//Console.WriteLine(next);
+				
+				if(!next.isEmpty)
+					game.Play(next);
+			}
+
+			game.PrintToConsole();
+		}
+
 
 		static void GameOne()
 		{

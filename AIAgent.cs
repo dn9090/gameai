@@ -33,6 +33,12 @@ namespace BlocksAI
 			this.timeout = timeout;
 		}
 
+		public AIAgent(int maxDepth, float gamma, float omega) : this(-1, maxDepth, -1)
+		{
+			this.gamma = gamma;
+			this.omega = omega;
+		}
+
 		public AIAgent(int player, int maxDepth) : this(player, maxDepth, -1)
 		{
 		}

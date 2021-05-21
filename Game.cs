@@ -95,6 +95,47 @@ namespace BlocksAI
 		}
 
 		public Span<int> GetOpponents(int player) => new Span<int>(this.opponents, player * 2, this.states.Length - 1);
+	
+		public Move AlignFromContract(Move move)
+		{
+			// -1,8 -> 8,-1 -> 22,8
+
+			var state = this.states[move.player];
+			var result = move;
+
+			if(state.first > state.second)
+				result = new Move(result.player, result.second, result.first, result.block);
+
+			if(result.first == -1)
+				result.first = state.first;
+			
+			if(result.second == -1)
+				result.second = state.second;
+
+			return result;
+		}
+
+		public Move AlignToContract(Move move) // Game contract and stupid java fixes...
+		{
+			var state = this.states[move.player];
+			var result = move;
+
+			// 22,8 -> 22,7
+			// -1,7 -> 7, -1
+
+			if(state.first == move.first)
+				result.first = -1;
+			
+			if(state.second == move.second)
+				result.second = -1;
+
+			if(state.first > state.second)
+				result = new Move(result.player, result.second, result.first, result.block);
+
+			return result;
+		}
+
+		public Move InvalidMove(int player) => new Move(player, this.states[player], -1);
 	}
 
 	public struct Move
@@ -116,7 +157,6 @@ namespace BlocksAI
 			this.block = block;
 			this.player = player;
 		}
-
 
 		public Move(int player, PlayState state, int block) : this(player, state.first, state.second, block)
 		{
