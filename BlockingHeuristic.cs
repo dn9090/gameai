@@ -8,12 +8,39 @@ namespace BlocksAI
 {
 	public static class BlockingHeuristic
 	{
-		public static int SomeFreeBlock(Board board)
+		public static int SomeFreeBlock(Board board, PlayState state)
 		{
-			// Fallback if no heuristic matches.
+			// Get a free block that is not the neighbor of
+			// one of our stones.
 			for(int i = 0; i < board.fields.Length; ++i)
+			{
+				if(board.fields[i] == Field.Free)
+				{
+					var start = Board.NeighborStartingIndex(i);
+					var end = Board.NeighborEndingIndex(i);
+					var selfBlock = false;
+
+					for(int j = start; j < end && board.neighbors[j] != -1; ++j)
+					{
+						if(board.neighbors[i] == state.first || board.neighbors[i] == state.second)
+						{
+							selfBlock = true;
+							break;
+						}
+					}
+
+					if(!selfBlock)
+						return i;
+				}
+			}
+
+			// Fallback if no non neighboring block was found.
+			for(int i = 0; i < board.fields.Length; ++i)
+			{
 				if(board.fields[i] == Field.Free)
 					return i;
+			}
+
 			return -1;
 		}
 

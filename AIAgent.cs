@@ -39,7 +39,7 @@ namespace BlocksAI
 			this.maxDepth = maxDepth;
 			this.stopwatch = new Stopwatch();
 			this.moves = new ConcurrentStack<Move>();
-			this.hyperparams = new Hyperparameters(10f, 0.3f);
+			this.hyperparams = new Hyperparameters(6f, 1f);
 			this.timeout = timeout;
 		}
 
@@ -91,7 +91,7 @@ namespace BlocksAI
 					return maxScore;
 
 				Turn.Play(game.board, game.states[player], state);
-				var block = GetBlockingField(ref game, opponents);
+				var block = GetBlockingField(ref game, currentState, opponents);
 				Turn.Withdraw(game.board, game.states[player], state);
 
 				var move = new Move(player, state, block);
@@ -131,7 +131,7 @@ namespace BlocksAI
 					return minScore;
 
 				Turn.Play(game.board, game.states[player], state);
-				var block = GetBlockingField(ref game, opponents);
+				var block = GetBlockingField(ref game, currentState, opponents);
 				Turn.Withdraw(game.board, game.states[player], state);
 
 				var move = new Move(player, state, block);
@@ -198,7 +198,7 @@ namespace BlocksAI
 				yield return new PlayState(current.first, buffer[i]);
 		}
 
-		public static int GetBlockingField(ref Game game, Span<int> opponents)
+		public static int GetBlockingField(ref Game game, PlayState state, Span<int> opponents)
 		{
 			Span<int> neighbors = stackalloc int[6];
 			Span<int> free = stackalloc int[6];
@@ -222,19 +222,20 @@ namespace BlocksAI
 				
 				var killTwo = BlockingHeuristic.KillTwo(fFirst, fSecond);
 
-				if(killTwo != -1) { //Console.WriteLine("[Heuristic] Kill Two: " + i);
-					return killTwo; }
+				if(killTwo != -1)
+					return killTwo;
 
 				var killBorder = BlockingHeuristic.KillAtDeadEnd(game.board, fFirst);
 
-				if(killBorder != -1) { //Console.WriteLine("[Heuristic] Kill Dead End (A): " + i);
-					return killBorder; }
+				if(killBorder != -1)
+					return killBorder;
 
 				killBorder = BlockingHeuristic.KillAtDeadEnd(game.board, fSecond);
 
-				if(killBorder != -1) { //Console.WriteLine("[Heuristic] Kill Dead End (B): " + i);
-					return killBorder; }
+				if(killBorder != -1)
+					return killBorder;
 
+				// Block the opponent with the higher score.
 				if(score > highestScore)
 				{
 					highestScore = score;
@@ -242,7 +243,7 @@ namespace BlocksAI
 				}
 			}
 
-			return scoreBlock == -1 ? BlockingHeuristic.SomeFreeBlock(game.board) : scoreBlock;
+			return scoreBlock == -1 ? BlockingHeuristic.SomeFreeBlock(game.board, state) : scoreBlock;
 		}
 	}
 }

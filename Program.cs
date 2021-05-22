@@ -8,6 +8,15 @@ namespace BlocksAI
 	{
 		static void Main(string[] args)
 		{
+			Console.WriteLine("##########################################################");
+			Console.WriteLine(@"__________.__                 __              _____  .___ ");
+			Console.WriteLine(@"\______   \  |   ____   ____ |  | __  ______ /  _  \ |   |");
+			Console.WriteLine(@" |    |  _/  |  /  _ \_/ ___\|  |/ / /  ___//  /_\  \|   |");
+			Console.WriteLine(@" |    |   \  |_(  <_> )  \___|    <  \___ \/    |    \   |");
+			Console.WriteLine(@" |______  /____/\____/ \___  >__|_ \/____  >____|__  /___|");
+			Console.WriteLine(@"        \/                 \/     \/     \/        \/     ");
+			Console.WriteLine("##########################################################");
+
 			//ConnectAndPlay(new AIAgent(10, new Hyperparameters(6f, 1f)), "192.168.0.31", 55555, count: 3);
 
 			/*
@@ -32,62 +41,31 @@ namespace BlocksAI
 			//DebugBlock();
 			//TestBlocking();
 
-			//GameOne();
-			//GameTwo();
-			//GameThree();
-			//GameFour();
-			//GameFive();
+			GameOne();
+			GameTwo();
+			GameThree();
+			GameFour();
+			GameFive();
 
 			//GameFromServer();
 		}
 
 		static void ConnectAndPlay(AIAgent agent, string ip, int port, int count = 1)
 		{
+			Console.WriteLine("Connecting to " + ip + ":" + port + "...");
+
 			var clients = new Client[count];
 
 			for(int i = 0; i < clients.Length; ++i)
 				clients[i] = new Client(agent, true);
+
+			Console.WriteLine("Preparing clients...");
 
 			foreach(var client in clients)
 				client.Connect(ip, port++);
 
 			foreach(var client in clients)
 				client.WaitForDisconnect();
-		}
-		
-		static void DebugBlock()
-		{
-			Game game = Game.Create();
-
-			for(int i = 0; i < 3; ++i)
-			{
-				Console.WriteLine("Opponents of " + i);
-				var opp = game.GetOpponents(i);
-				foreach(var o in opp)
-					Console.WriteLine(o);
-			}
-			
-
-			game.states[0] = new PlayState(13, 6);
-			game.states[1] = new PlayState(17, 5);
-			game.states[2] = new PlayState(30, 31);
-			game.score[0] = 2;
-			game.score[1] = 2;
-			game.score[2] = 1;
-
-			foreach(var state in game.states)
-			{
-				game.board[state.first] = Field.Stone;
-				game.board[state.second] = Field.Stone;
-			}
-
-			game.board[28] = Field.Blocked;
-			game.board[32] = Field.Blocked;
-			game.board[11] = Field.Blocked;
-			//game.board[13] = Field.Blocked;
-
-			game.PrintToConsole();
-			Console.WriteLine(AIAgent.GetBlockingField(ref game, game.GetOpponents(0)));
 		}
 
 		static void GameFromServer()
@@ -293,7 +271,7 @@ namespace BlocksAI
 			var smartAgent = new AIAgent(2, 15);
 			
 
-			for(int i = 0; i < 30; ++i)
+			for(int i = 0; i < 42; ++i)
 			{
 				//Console.WriteLine("Turn: " + i % 3);
 
@@ -313,56 +291,6 @@ namespace BlocksAI
 			}
 
 			game.PrintToConsole();
-		}
-
-		static void TestBlocking()
-		{
-			Console.WriteLine("++++ TEST BLOCKING +++");
-
-			var board = new Board(6);
-
-			var game = Game.Create();
-			game.Start();
-			var opponents = game.GetOpponents(1);
-
-			board.PrintToConsole();
-			var blockAt = AIAgent.GetBlockingField(ref game, opponents);
-
-			Console.WriteLine("Block at: " + blockAt);
-
-			board[23] = Field.Blocked;
-
-			board.PrintToConsole();
-			blockAt= AIAgent.GetBlockingField(ref game, opponents);
-
-			Console.WriteLine("Block at: " + blockAt);
-		
-			game.states[opponents[0]] = Turn.Play(board, game.states[opponents[0]], new Move(-1, 14, 8, 16));
-			board[blockAt] = Field.Blocked;
-
-			board.PrintToConsole();
-
-			blockAt= AIAgent.GetBlockingField(ref game, opponents);
-
-			Console.WriteLine("Block at: " + blockAt);
-
-			game.states[opponents[0]] = Turn.Play(board, game.states[opponents[0]], new Move(-1, 15, 8, 18));
-			board[blockAt] = Field.Blocked;
-
-			board.PrintToConsole();
-
-			blockAt= AIAgent.GetBlockingField(ref game, opponents);
-
-			Console.WriteLine("Block at: " + blockAt);
-
-			board[14] = Field.Blocked;
-			board[20] = Field.Blocked;
-
-			board.PrintToConsole();
-
-			blockAt= AIAgent.GetBlockingField(ref game, opponents);
-
-			Console.WriteLine("Block at: " + blockAt);
 		}
 	}
 }
