@@ -6,11 +6,22 @@ using System.Threading;
 
 namespace BlocksAI
 {
+	public readonly struct Hyperparameters
+	{
+		public readonly float gamma;
+
+		public readonly float omega;
+
+		public Hyperparameters(float gamma, float omega)
+		{
+			this.gamma = gamma;
+			this.omega = omega;
+		}
+	}
+
 	public struct AIAgent
 	{
-		public float gamma;
-
-		public float omega;
+		public Hyperparameters hyperparams;
 
 		public int maxDepth;
 
@@ -28,15 +39,13 @@ namespace BlocksAI
 			this.maxDepth = maxDepth;
 			this.stopwatch = new Stopwatch();
 			this.moves = new ConcurrentStack<Move>();
-			this.gamma = 6f;
-			this.omega = 1f;
+			this.hyperparams = new Hyperparameters(10f, 0.3f);
 			this.timeout = timeout;
 		}
 
-		public AIAgent(int maxDepth, float gamma, float omega) : this(-1, maxDepth, -1)
+		public AIAgent(int maxDepth, Hyperparameters hyperparams) : this(-1, maxDepth, -1)
 		{
-			this.gamma = gamma;
-			this.omega = omega;
+			this.hyperparams = hyperparams;
 		}
 
 		public AIAgent(int player, int maxDepth) : this(player, maxDepth, -1)
@@ -60,7 +69,8 @@ namespace BlocksAI
 			CalculateScore(ref game, game.board.GetFreeNeighborCount(game.states[this.player]));
 
 		public float CalculateScore(ref Game game, int free) =>
-			this.gamma * (free / 6) + this.omega * ((float)game.score[this.player] / ((float)game.scoreSum + 0.001f));
+			this.hyperparams.gamma * (free / 6) +
+			this.hyperparams.omega * ((float)game.score[this.player] / ((float)game.scoreSum + 0.001f));
  
 		public float Max(ref Game game, int depth, float alpha, float beta)
 		{

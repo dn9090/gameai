@@ -8,7 +8,7 @@ namespace BlocksAI
 	{
 		static void Main(string[] args)
 		{
-			ConnectAndPlay(new AIAgent(10, 6f, 1f), "192.168.0.31", 55555, count: 3);
+			//ConnectAndPlay(new AIAgent(10, new Hyperparameters(6f, 1f)), "192.168.0.31", 55555, count: 3);
 
 			/*
 			var board = new Board(6);

@@ -17,6 +17,10 @@ namespace BlocksAI
 			this.random = new Random(seed);
 		}
 
+		public RandomAgent(int seed) : this(-1 , seed)
+		{
+		}
+
 		public Move Next(ref Game game)
 		{
 			Span<int> neighborsBuffer = stackalloc int[6];
