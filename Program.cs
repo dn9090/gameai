@@ -17,7 +17,7 @@ namespace BlocksAI
 			Console.WriteLine(@"        \/                 \/     \/     \/        \/     ");
 			Console.WriteLine("##########################################################");
 
-			//ConnectAndPlay(new AIAgent(10, new Hyperparameters(6f, 1f)), "192.168.0.31", 55555, count: 3);
+			//ConnectAndPlay(new AIAgent(6, new Hyperparameters(6f, 1f)), "192.168.0.31", 55555, count: 3);
 
 			/*
 			var board = new Board(6);
@@ -72,7 +72,7 @@ namespace BlocksAI
 		static void GameFromServer()
 		{
 			Console.WriteLine("##################################");
-			Console.WriteLine("####### GAME 1");
+			Console.WriteLine("####### GAME FROM SERVER");
 			Console.WriteLine("##################################");
 
 
@@ -80,13 +80,13 @@ namespace BlocksAI
 			game.Start();
 			//game.PrintToConsole();
 
-			AIAgent a = new AIAgent(0, 10, -1);
-			AIAgent b = new AIAgent(1, 10, -1);
-			AIAgent c = new AIAgent(2, 10, -1);
+			AIAgent a = new AIAgent(0, 6, 3000);
+			AIAgent b = new AIAgent(1, 6, 3000);
+			AIAgent c = new AIAgent(2, 6, 3000);
 
 			for(int i = 0; i < 39; ++i)
 			{
-				//Console.WriteLine("Turn: " + i % 3);
+				Console.WriteLine("Turn: " + i % 3);
 
 				Move next = Move.Empty();
 
@@ -97,7 +97,7 @@ namespace BlocksAI
 				if(i%3 == 2)
 					next = c.Minimax(ref game);
 
-				//Console.WriteLine(next);
+				Console.WriteLine(next);
 				
 				if(!next.isEmpty)
 					game.Play(next);
@@ -123,7 +123,7 @@ namespace BlocksAI
 			AIAgent smartAgent = new AIAgent(2, 7);
 			
 
-			for(int i = 0; i < 22; ++i)
+			for(int i = 0; i < 30; ++i)
 			{
 				//Console.WriteLine("Turn: " + i % 3);
 
@@ -161,7 +161,7 @@ namespace BlocksAI
 			RandomAgent randAgent2 = new RandomAgent(2, 4000);
 			
 
-			for(int i = 0; i < 21; ++i)
+			for(int i = 0; i < 24; ++i)
 			{
 				//Console.WriteLine("Turn: " + i % 3);
 
@@ -327,8 +327,8 @@ namespace BlocksAI
 				if(!next.isEmpty)
 					game.Play(next);
 			
-				if(i < 7)
-					game.PrintToConsole();
+				//if(i < 7)
+				//	game.PrintToConsole();
 			}
 
 			game.PrintToConsole();

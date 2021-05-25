@@ -105,12 +105,13 @@ namespace BlocksAI
 			var stream = tcpClient.GetStream();
 
 			var settings = Message4.Read(stream).ToClientSettings();
-			var timeout = (settings.timeout * 1000) - (3 * settings.latency);
+			var timeout = (settings.timeout * 1000) - (3 * settings.latency) - 100;
 
 			Console.WriteLine("Connected as player " + settings.player + " ---"
-				+ "\nLatency: " + settings.latency
-				+ "\nTimeout in sec: " + settings.timeout
-				+ "\nControl bytes: " + settings.controlBytes);
+				+ "\n\tLatency: " + settings.latency
+				+ "\n\tTimeout in sec: " + settings.timeout
+				+ "\n\tControl bytes: " + settings.controlBytes
+				+ "\n\tCalculated timeout in ms: " + timeout);
 
 			this.agent.player = settings.player;
 			this.agent.timeout = settings.timeout;
@@ -123,14 +124,11 @@ namespace BlocksAI
 			{
 				var move = Move.Empty();
 				var aligned = Move.Empty();
-				var myTurn = false;
 
 				try
 				{
 					while(true)
 					{
-						myTurn = false;
-
 						move = Message4.Read(stream).ToMove();
 						
 						if(move.player == settings.player)
@@ -148,8 +146,6 @@ namespace BlocksAI
 						game.Play(aligned);
 					}
 
-					myTurn = true;
-
 					if(this.debug)
 						Console.WriteLine($"[{settings.player}] My turn...");
 
@@ -158,7 +154,7 @@ namespace BlocksAI
 					if(next.isEmpty)
 					{
 						Message4.Send(stream, Message4.From(game.InvalidMove(settings.player)));
-						Console.WriteLine($"[{settings.player}] No move found...");
+						Console.WriteLine($"[{settings.player}] No move found... (was {next})");
 						break;
 					}
 
@@ -174,7 +170,7 @@ namespace BlocksAI
 						Console.Out.Flush();
 					}
 				} catch (Exception e) {
-					Console.Error.WriteLine($"[{settings.player}] ###### Exception with move {move} aligned {aligned} my turn: {myTurn}");
+					Console.Error.WriteLine($"[{settings.player}] ###### Exception with move {move} aligned {aligned}");
 					Console.Error.Write(e.StackTrace);
 					Console.Error.Flush();
 					game.PrintToConsole();

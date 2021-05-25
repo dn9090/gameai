@@ -140,7 +140,7 @@ namespace BlocksAI
 
 	public struct Move
 	{
-		public bool isEmpty => first == -1 || second == -1 || block == -1;
+		public bool isEmpty => block == -1 || (first == -1 && second == -1);
 
 		public int player;
 

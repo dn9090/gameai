@@ -102,9 +102,6 @@ namespace BlocksAI
 
 				for(int i = 0; i < blockCount; ++i)
 				{
-					if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
-						return maxScore;
-
 					var move = new Move(player, state, blockingFields[i]);
 					var oldState = game.Play(move);
 					var score = Min(nextPlayer, ref game, depth - 1, -beta, -alpha);
@@ -119,7 +116,7 @@ namespace BlocksAI
 
 					alpha = Math.Max(alpha, score);
 
-					if(alpha > beta)
+					if(alpha > beta || this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
 						goto exit;
 				}
 			}
@@ -150,9 +147,6 @@ exit:
 
 				for(int i = 0; i < blockCount; ++i)
 				{
-					if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
-						return minScore;
-
 					var move = new Move(player, state, blockingFields[i]);
 					var oldState = game.Play(move);
 					var score = nextPlayer == this.player ? Max(ref game, depth - 1, -beta, -alpha) : Min(nextPlayer, ref game, depth - 1, alpha, beta);
@@ -163,16 +157,15 @@ exit:
 
 					alpha = Math.Max(alpha, score);
 
-					if(alpha >= beta)
+					if(alpha >= beta || this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
 						goto exit;
 				}
 			}
-
-exit:
 			// No moves found... player is skipped.
 			if(minScore == float.MaxValue)
 				return nextPlayer == this.player ? Max(ref game, depth - 1, -beta, -alpha) : Min(nextPlayer, ref game, depth - 1, alpha, beta);
-			
+				
+exit:
 			return minScore;
 		}
 
