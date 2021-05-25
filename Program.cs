@@ -46,6 +46,7 @@ namespace BlocksAI
 			GameThree();
 			GameFour();
 			GameFive();
+			GameSix();
 
 			//GameFromServer();
 		}
@@ -288,6 +289,46 @@ namespace BlocksAI
 				
 				if(!next.isEmpty)
 					game.Play(next);
+			}
+
+			game.PrintToConsole();
+		}
+
+		static void GameSix()
+		{
+			Console.WriteLine("##################################");
+			Console.WriteLine("####### GAME 6");
+			Console.WriteLine("##################################");
+
+
+			Game game = Game.Create();
+			game.Start();
+			//game.PrintToConsole();
+
+			var dumbAgent = new AIAgent(0, 2);
+			var smartAgent = new AIAgent(1, 7);
+			var randAgent = new RandomAgent(2, 8000);
+
+			for(int i = 0; i < 42; ++i)
+			{
+				//Console.WriteLine("Turn: " + i % 3);
+
+				Move next = Move.Empty();
+
+				if(i%3 == 1)
+					next = smartAgent.Minimax(ref game);
+				if(i%3 == 0)
+					next = dumbAgent.Minimax(ref game);
+				if(i%3 == 2)
+					next = randAgent.Next(ref game);
+
+				//Console.WriteLine(next);
+				
+				if(!next.isEmpty)
+					game.Play(next);
+			
+				if(i < 7)
+					game.PrintToConsole();
 			}
 
 			game.PrintToConsole();

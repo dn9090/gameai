@@ -12,6 +12,7 @@ namespace BlocksAI
 		{
 			// Get a free block that is not the neighbor of
 			// one of our stones.
+			
 			for(int i = 0; i < board.fields.Length; ++i)
 			{
 				if(board.fields[i] == Field.Free)
@@ -48,14 +49,6 @@ namespace BlocksAI
 		{
 			// This heuristic tries to minimize the available movement space
 			// for the stone with the lowest number of free fields.
-			if(freeFirst.Length + freeSecond.Length == 0)
-				return -1;
-
-			if(freeFirst.Length == 0)
-				return freeSecond[0];
-			
-			if(freeSecond.Length == 0)
-				return freeFirst[0];
 
 			for(int i = 0; i < freeFirst.Length; ++i)
 			for(int j = 0; j < freeSecond.Length; ++j)
@@ -64,7 +57,10 @@ namespace BlocksAI
 					return freeFirst[i];
 			}
 
-			return freeFirst[0];
+			if(freeFirst.Length + freeSecond.Length == 0)
+				return -1;
+
+			return freeFirst.Length == 0 ? freeSecond[0] : freeFirst[0];
 		}
 
 		public static int KillTwo(Span<int> freeFirst, Span<int> freeSecond)

@@ -229,7 +229,6 @@ exit:
 			for(int i = opponents.Length - 1; i >= 0; --i)
 			{
 				var opponent = game.states[opponents[i]];
-				var score = game.score[opponents[i]];
 
 				var nFirst = game.board.GetNeighbors(opponent.first, neighbors);
 				var fFirst = game.board.GetFields(nFirst, Field.Free, free);
@@ -240,27 +239,20 @@ exit:
 				if(fFirst.Length == 0 && fSecond.Length == 0)
 					continue;
 				
-				var block = BlockingHeuristic.KillTwo(fFirst, fSecond);
+				fields[count] = BlockingHeuristic.KillTwo(fFirst, fSecond);
+				count += fields[count] == -1 ? 0 : 1;
 
-				if(block != -1)
-					fields[count++] = block;
+				fields[count] = BlockingHeuristic.KillAtDeadEnd(game.board, fFirst);
+				count += fields[count] == -1 ? 0 : 1;
 
-				block = BlockingHeuristic.KillAtDeadEnd(game.board, fFirst);
+				fields[count] = BlockingHeuristic.KillAtDeadEnd(game.board, fSecond);
+				count += fields[count] == -1 ? 0 : 1;
 
-				if(block != -1)
-					fields[count++] = block;
-
-				block = BlockingHeuristic.KillAtDeadEnd(game.board, fSecond);
-
-				if(block != -1)
-					fields[count++] = block;
-
-				block = BlockingHeuristic.MinMovementSpace(fFirst, fSecond);
-
-				if(block != -1)
-					fields[count++] = block;
+				fields[count] = BlockingHeuristic.MinMovementSpace(fFirst, fSecond);
+				count += fields[count] == -1 ? 0 : 1;
 			}
 
+			// If no heuristic matches find some free block.
 			if(count == 0)
 				fields[count++] = BlockingHeuristic.SomeFreeBlock(game.board, state);
 
