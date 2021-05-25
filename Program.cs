@@ -119,7 +119,7 @@ namespace BlocksAI
 
 			RandomAgent randAgent = new RandomAgent(0, 1000);
 			AIAgent dumbAgent = new AIAgent(1, 3);
-			AIAgent smartAgent = new AIAgent(2, 11);
+			AIAgent smartAgent = new AIAgent(2, 7);
 			
 
 			for(int i = 0; i < 22; ++i)
@@ -155,7 +155,7 @@ namespace BlocksAI
 			game.Start();
 			//game.PrintToConsole();
 
-			AIAgent smartAgent = new AIAgent(0, 9);
+			AIAgent smartAgent = new AIAgent(0, 7);
 			RandomAgent randAgent = new RandomAgent(1, 1000);
 			RandomAgent randAgent2 = new RandomAgent(2, 4000);
 			
@@ -195,7 +195,7 @@ namespace BlocksAI
 
 			RandomAgent randAgent = new RandomAgent(0, 1000);
 			RandomAgent randAgent2 = new RandomAgent(1, 4000);
-			AIAgent smartAgent = new AIAgent(2, 9);
+			AIAgent smartAgent = new AIAgent(2, 7);
 		
 			for(int i = 0; i < 36; ++i)
 			{
@@ -230,7 +230,7 @@ namespace BlocksAI
 			game.Start();
 			//game.PrintToConsole();
 
-			var smartAgent = new AIAgent(0, 1000, 2000);
+			var smartAgent = new AIAgent(0, 100, 1000);
 			var dumbAgent = new AIAgent(1, 3);
 			var randAgent = new RandomAgent(2, 4000);
 
@@ -266,9 +266,9 @@ namespace BlocksAI
 			game.Start();
 			//game.PrintToConsole();
 
-			var dumbAgent = new AIAgent(0, 3);
+			var dumbAgent = new AIAgent(0, 2);
 			var randAgent = new RandomAgent(1, 7000);
-			var smartAgent = new AIAgent(2, 15);
+			var smartAgent = new AIAgent(2, 8);
 			
 
 			for(int i = 0; i < 42; ++i)

@@ -48,6 +48,8 @@ namespace BlocksAI
 		{
 			// This heuristic tries to minimize the available movement space
 			// for the stone with the lowest number of free fields.
+			if(freeFirst.Length + freeSecond.Length == 0)
+				return -1;
 
 			if(freeFirst.Length == 0)
 				return freeSecond[0];
@@ -58,7 +60,7 @@ namespace BlocksAI
 			for(int i = 0; i < freeFirst.Length; ++i)
 			for(int j = 0; j < freeSecond.Length; ++j)
 			{
-				if(freeFirst[i] != freeSecond[i])
+				if(freeFirst[i] != freeSecond[j])
 					return freeFirst[i];
 			}
 

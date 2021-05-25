@@ -33,14 +33,18 @@ namespace BlocksAI
 
 		public ConcurrentStack<Move> moves;
 
-		public AIAgent(int player, int maxDepth, int timeout)
+		public AIAgent(int player, Hyperparameters hyperparams, int maxDepth, int timeout)
 		{
 			this.player = player;
 			this.maxDepth = maxDepth;
 			this.stopwatch = new Stopwatch();
 			this.moves = new ConcurrentStack<Move>();
-			this.hyperparams = new Hyperparameters(6f, 1f);
+			this.hyperparams = hyperparams;
 			this.timeout = timeout;
+		}
+
+		public AIAgent(int player, int maxDepth, int timeout) : this(player, new Hyperparameters(6f, 1f), maxDepth, timeout)
+		{
 		}
 
 		public AIAgent(int maxDepth, Hyperparameters hyperparams) : this(-1, maxDepth, -1)
@@ -85,33 +89,41 @@ namespace BlocksAI
 			var nextPlayer = game.NextPlayer(this.player);
 			var maxScore = float.MinValue; 
 
+			Span<int> blockingFields = stackalloc int[4 * opponents.Length];
+
 			foreach(var state in GetPlayStates(game.board, currentState))
 			{
 				if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
 					return maxScore;
 
 				Turn.Play(game.board, game.states[player], state);
-				var block = GetBlockingField(ref game, currentState, opponents);
+				var blockCount = GetBlockingFields(ref game, currentState, opponents, blockingFields);
 				Turn.Withdraw(game.board, game.states[player], state);
 
-				var move = new Move(player, state, block);
-				var oldState = game.Play(move);
-				var score = Min(nextPlayer, ref game, depth - 1, -beta, -alpha);
-				game.Withdraw(oldState, move);
-
-				if(score > maxScore)
+				for(int i = 0; i < blockCount; ++i)
 				{
-					maxScore = score;
-					if(depth == maxDepth)
-						this.moves.Push(move);
+					if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
+						return maxScore;
+
+					var move = new Move(player, state, blockingFields[i]);
+					var oldState = game.Play(move);
+					var score = Min(nextPlayer, ref game, depth - 1, -beta, -alpha);
+					game.Withdraw(oldState, move);
+
+					if(score > maxScore)
+					{
+						maxScore = score;
+						if(depth == maxDepth)
+							this.moves.Push(move);
+					}
+
+					alpha = Math.Max(alpha, score);
+
+					if(alpha > beta)
+						goto exit;
 				}
-
-				alpha = Math.Max(alpha, score);
-
-				if(alpha > beta)
-					break;
 			}
-
+exit:
 			return maxScore;
 		}
 
@@ -124,30 +136,39 @@ namespace BlocksAI
 			var opponents = game.GetOpponents(this.player);
 			var nextPlayer = game.NextPlayer(player);
 			var minScore = float.MaxValue;
+
+			Span<int> blockingFields = stackalloc int[4 * opponents.Length];
 		
 			foreach(var state in GetPlayStates(game.board, currentState))
 			{
 				if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
-					return minScore;
+						return minScore;
 
 				Turn.Play(game.board, game.states[player], state);
-				var block = GetBlockingField(ref game, currentState, opponents);
+				var blockCount = GetBlockingFields(ref game, currentState, opponents, blockingFields);
 				Turn.Withdraw(game.board, game.states[player], state);
 
-				var move = new Move(player, state, block);
-				var oldState = game.Play(move);
-				var score = nextPlayer == this.player ? Max(ref game, depth - 1, -beta, -alpha) : Min(nextPlayer, ref game, depth - 1, alpha, beta);
-				game.Withdraw(oldState, move);
+				for(int i = 0; i < blockCount; ++i)
+				{
+					if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
+						return minScore;
 
-				if(score < minScore)
-					minScore = score;
+					var move = new Move(player, state, blockingFields[i]);
+					var oldState = game.Play(move);
+					var score = nextPlayer == this.player ? Max(ref game, depth - 1, -beta, -alpha) : Min(nextPlayer, ref game, depth - 1, alpha, beta);
+					game.Withdraw(oldState, move);
 
-				alpha = Math.Max(alpha, score);
+					if(score < minScore)
+						minScore = score;
 
-				if(alpha >= beta)
-					break;
+					alpha = Math.Max(alpha, score);
+
+					if(alpha >= beta)
+						goto exit;
+				}
 			}
 
+exit:
 			// No moves found... player is skipped.
 			if(minScore == float.MaxValue)
 				return nextPlayer == this.player ? Max(ref game, depth - 1, -beta, -alpha) : Min(nextPlayer, ref game, depth - 1, alpha, beta);
@@ -198,13 +219,12 @@ namespace BlocksAI
 				yield return new PlayState(current.first, buffer[i]);
 		}
 
-		public static int GetBlockingField(ref Game game, PlayState state, Span<int> opponents)
+		public static int GetBlockingFields(ref Game game, PlayState state, Span<int> opponents, Span<int> fields)
 		{
 			Span<int> neighbors = stackalloc int[6];
 			Span<int> free = stackalloc int[6];
 
-			var highestScore = int.MinValue;
-			var scoreBlock = -1;
+			var count = 0;
 
 			for(int i = opponents.Length - 1; i >= 0; --i)
 			{
@@ -220,30 +240,31 @@ namespace BlocksAI
 				if(fFirst.Length == 0 && fSecond.Length == 0)
 					continue;
 				
-				var killTwo = BlockingHeuristic.KillTwo(fFirst, fSecond);
+				var block = BlockingHeuristic.KillTwo(fFirst, fSecond);
 
-				if(killTwo != -1)
-					return killTwo;
+				if(block != -1)
+					fields[count++] = block;
 
-				var killBorder = BlockingHeuristic.KillAtDeadEnd(game.board, fFirst);
+				block = BlockingHeuristic.KillAtDeadEnd(game.board, fFirst);
 
-				if(killBorder != -1)
-					return killBorder;
+				if(block != -1)
+					fields[count++] = block;
 
-				killBorder = BlockingHeuristic.KillAtDeadEnd(game.board, fSecond);
+				block = BlockingHeuristic.KillAtDeadEnd(game.board, fSecond);
 
-				if(killBorder != -1)
-					return killBorder;
+				if(block != -1)
+					fields[count++] = block;
 
-				// Block the opponent with the higher score.
-				if(score > highestScore)
-				{
-					highestScore = score;
-					scoreBlock = BlockingHeuristic.MinMovementSpace(fFirst, fSecond);
-				}
+				block = BlockingHeuristic.MinMovementSpace(fFirst, fSecond);
+
+				if(block != -1)
+					fields[count++] = block;
 			}
 
-			return scoreBlock == -1 ? BlockingHeuristic.SomeFreeBlock(game.board, state) : scoreBlock;
+			if(count == 0)
+				fields[count++] = BlockingHeuristic.SomeFreeBlock(game.board, state);
+
+			return count;
 		}
 	}
 }

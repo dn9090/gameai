@@ -15,9 +15,9 @@ namespace BlocksAI
 			this.seed = seed;
 		}
 
-		private static Hyperparameters Mutate(Hyperparameters hyperparams)
+		private Hyperparameters Mutate(Hyperparameters hyperparams)
 		{
-			return hyperparams; // *mutationStrength ... Mutate somehow
+			return new Hyperparameters();
 		}
 
 		private static Hyperparameters Randomize(Hyperparameters hyperparams)
