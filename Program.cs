@@ -17,7 +17,7 @@ namespace BlocksAI
 			Console.WriteLine(@"        \/                 \/     \/     \/        \/     ");
 			Console.WriteLine("##########################################################");
 
-			//ConnectAndPlay(new AIAgent(6, new Hyperparameters(6f, 1f)), "192.168.0.31", 55555, count: 3);
+			ConnectAndPlay(new AIAgent(6, new Hyperparameters(6f, 1f)), "192.168.0.31", 55555, count: 3);
 
 			/*
 			var board = new Board(6);
@@ -41,12 +41,12 @@ namespace BlocksAI
 			//DebugBlock();
 			//TestBlocking();
 
-			GameOne();
-			GameTwo();
-			GameThree();
-			GameFour();
-			GameFive();
-			GameSix();
+			//GameOne();
+			//GameTwo();
+			//GameThree();
+			//GameFour();
+			//GameFive();
+			//GameSix();
 
 			//GameFromServer();
 		}

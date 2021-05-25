@@ -97,7 +97,9 @@ namespace BlocksAI
 					return maxScore;
 
 				Turn.Play(game.board, game.states[player], state);
-				var blockCount = GetBlockingFields(ref game, currentState, opponents, blockingFields);
+				Turn.Block(game.board, currentState); // Dumbest rule in the game....
+				var blockCount = GetBlockingFields(ref game, state, opponents, blockingFields);
+				Turn.Free(game.board, currentState);
 				Turn.Withdraw(game.board, game.states[player], state);
 
 				for(int i = 0; i < blockCount; ++i)
@@ -140,9 +142,11 @@ exit:
 			{
 				if(this.stopwatch.ElapsedMilliseconds > (uint)this.timeout)
 						return minScore;
-
+					
 				Turn.Play(game.board, game.states[player], state);
-				var blockCount = GetBlockingFields(ref game, currentState, opponents, blockingFields);
+				Turn.Block(game.board, currentState); // Dumbest rule in the game....
+				var blockCount = GetBlockingFields(ref game, state, opponents, blockingFields);
+				Turn.Free(game.board, currentState);
 				Turn.Withdraw(game.board, game.states[player], state);
 
 				for(int i = 0; i < blockCount; ++i)
@@ -164,7 +168,7 @@ exit:
 			// No moves found... player is skipped.
 			if(minScore == float.MaxValue)
 				return nextPlayer == this.player ? Max(ref game, depth - 1, -beta, -alpha) : Min(nextPlayer, ref game, depth - 1, alpha, beta);
-				
+
 exit:
 			return minScore;
 		}
@@ -247,8 +251,11 @@ exit:
 
 			// If no heuristic matches find some free block.
 			if(count == 0)
-				fields[count++] = BlockingHeuristic.SomeFreeBlock(game.board, state);
-
+			{
+				fields[count] = BlockingHeuristic.SomeFreeBlock(game.board, state);
+				count += fields[count] == -1 ? 0 : 1;
+			}
+			
 			return count;
 		}
 	}

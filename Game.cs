@@ -220,6 +220,18 @@ namespace BlocksAI
 			return played;
 		}
 
+		public static void Block(Board board, PlayState state)
+		{
+			board[state.first] = Field.Blocked;
+			board[state.second] = Field.Blocked;
+		}
+
+		public static void Free(Board board, PlayState state)
+		{
+			board[state.first] = Field.Free;
+			board[state.second] = Field.Free;
+		}
+		
 		public static PlayState Withdraw(Board board, PlayState from, PlayState to)
 		{
 			board[to.first] = Field.Free;
