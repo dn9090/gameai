@@ -12,7 +12,7 @@ namespace BlocksAI
 		{
 			// Get a free block that is not the neighbor of
 			// one of our stones.
-			
+
 			for(int i = 0; i < board.fields.Length; ++i)
 			{
 				if(board.fields[i] == Field.Free)
@@ -56,10 +56,7 @@ namespace BlocksAI
 				if(freeFirst[i] != freeSecond[j])
 					return freeFirst[i];
 			}
-
-			if(freeFirst.Length + freeSecond.Length == 0)
-				return -1;
-
+			
 			return freeFirst.Length == 0 ? freeSecond[0] : freeFirst[0];
 		}
 
