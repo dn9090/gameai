@@ -1,8 +1,6 @@
 package com.tschutschu;
 
-import com.sun.corba.se.impl.orbutil.graph.Graph;
 import lenz.htw.coast.world.GraphNode;
-import mikera.vectorz.Vector3;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,10 +54,10 @@ public class World
         Vector3 va = new Vector3(a.x, a.y, a.z);
         Vector3 vb = new Vector3(b.x, b.y, b.z);
 
-        double dot = va.dotProduct(vb);
-        va.crossProduct(vb);
+        double dot = Vector3.Dot(va, vb);
+        va.Cross(vb);
 
-        return (float)Math.atan(va.magnitude());
+        return (float)Math.atan(va.Magnitude());
     }
 
     private static int Timestep(int[] history, int current)
