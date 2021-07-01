@@ -15,6 +15,13 @@ public class Vector3
         this.z = z;
     }
 
+    public Vector3(Vector3 value)
+    {
+        this.x = value.x;
+        this.y = value.y;
+        this.z = value.z;
+    }
+
     public Vector3(float value)
     {
         this.x = value;
@@ -30,6 +37,34 @@ public class Vector3
     public float SqrMagnitude()
     {
         return this.x * this.x + this.y * this.y + this.z * this.z;
+    }
+
+    public void Set(float value)
+    {
+        this.x = value;
+        this.y = value;
+        this.z = value;
+    }
+
+    public void Set(Vector3 value)
+    {
+        this.x = value.x;
+        this.y = value.y;
+        this.z = value.z;
+    }
+
+    public void Add(Vector3 rhs)
+    {
+        this.x += rhs.x;
+        this.y += rhs.y;
+        this.z += rhs.z;
+    }
+
+    public void Substract(Vector3 rhs)
+    {
+        this.x -= rhs.x;
+        this.y -= rhs.y;
+        this.z -= rhs.z;
     }
 
     public void Multiply(float value)
@@ -51,6 +86,20 @@ public class Vector3
         this.x *= rhs.x;
         this.y *= rhs.y;
         this.z *= rhs.z;
+    }
+
+    public float Distance(Vector3 rhs)
+    {
+        return (float)Math.sqrt(SqrDistance(rhs));
+    }
+
+    public float SqrDistance(Vector3 rhs)
+    {
+        float x = rhs.x - this.x;
+        float y = rhs.y - this.y;
+        float z = rhs.z - this.z;
+
+        return x * x + y * y + z * z;
     }
 
     public void Cross(Vector3 rhs)
@@ -91,5 +140,29 @@ public class Vector3
     public static Vector3 Forward()
     {
         return new Vector3(0f, 0f, 1f);
+    }
+
+    public static float SqrDistance(float lx, float ly, float lz, float rx, float ry, float rz)
+    {
+        float x = rx - lx;
+        float y = ry - ly;
+        float z = rz - lz;
+
+        return x * x + y * y + z * z;
+    }
+
+    public static float SqrDistance(Vector3 position, float rx, float ry, float rz)
+    {
+        return SqrDistance(position.x, position.y, position.z, rx, ry, rz);
+    }
+
+    public static float Distance(float lx, float ly, float lz, float rx, float ry, float rz)
+    {
+        return (float)Math.sqrt(SqrDistance(lx, ly, lz, rx, ry, rz));
+    }
+
+    public static float Distance(Vector3 position, float rx, float ry, float rz)
+    {
+        return (float)Math.sqrt(SqrDistance(position, rx, ry, rz));
     }
 }

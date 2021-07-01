@@ -2,184 +2,78 @@ package com.tschutschu;
 
 import lenz.htw.coast.world.GraphNode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class World
 {
+    public GraphNode[] testTargets;
+
     public GraphNode[] nodes;
 
-    public int[] neighbors;
-
-    public int maxNeighbors;
+    public int[] blockedNeighbors;
 
     public Hashtable<GraphNode, Integer> nodeToIndex;
 
     private World(GraphNode[] nodes)
     {
         this.nodes = nodes;
+        this.blockedNeighbors = new int[this.nodes.length];
         this.nodeToIndex = new Hashtable<>();
+    }
+
+    public float GetBlockedNeightborShare(int index)
+    {
+        return this.blockedNeighbors[index] / this.nodes[index].neighbors.length;
+    }
+
+    public float GetNegativeImpact(int index, int player)
+    {
+        float impact = 0;
+        impact = this.nodes[index].owner == player + 1 ? 2 : 0;
+        impact = this.nodes[index].owner == 0 ? 1 : 0;
+        return impact;
     }
 
     public static World Create(GraphNode[] nodes)
     {
         World world = new World(nodes);
-        world.maxNeighbors = 0;
 
         for(int i = 0; i < nodes.length; ++i)
         {
-            if(nodes[i].neighbors.length > world.maxNeighbors)
-                world.maxNeighbors = nodes[i].neighbors.length;
-
             world.nodeToIndex.put(nodes[i], i);
+
+            for(int n = 0; n < nodes[i].neighbors.length; ++n)
+                world.blockedNeighbors[i] += nodes[i].neighbors[n].blocked ? 1 : 0;
         }
 
-        world.neighbors = new int[nodes.length * world.maxNeighbors];
+        world.testTargets = new GraphNode[2];
+        Random r = new Random(1);
 
-        for(int i = 0; i < nodes.length; ++i)
+        for(int i = 0; i < world.testTargets.length; ++i)
         {
-            for(int n = 0; n < nodes[i].neighbors.length; ++n)
-                world.neighbors[i * world.maxNeighbors + n] = world.nodeToIndex.get(nodes[i].neighbors[n]);
-            for(int n = nodes[i].neighbors.length; n < world.maxNeighbors; ++n)
-                world.neighbors[i * world.maxNeighbors + n] = -1;
+            int index = 0;
+            do
+            {
+                index = r.nextInt(world.testTargets.length);
+            } while(world.nodes[index].blocked);
+            world.testTargets[i] = world.nodes[index];
         }
 
         return world;
     }
 
-    public float Distance(GraphNode a, GraphNode b)
+    public static float Distance(GraphNode a, GraphNode b)
     {
-        Vector3 va = new Vector3(a.x, a.y, a.z);
-        Vector3 vb = new Vector3(b.x, b.y, b.z);
-
-        double dot = Vector3.Dot(va, vb);
-        va.Cross(vb);
-
-        return (float)Math.atan(va.Magnitude());
+        return Distance(new Vector3(a.x, a.y, a.z), b);
     }
 
-    private static int Timestep(int[] history, int current)
+    public static float Distance(Vector3 position, GraphNode node)
     {
-        int timestep = 0;
+        Vector3 v = new Vector3(node.x, node.y, node.z);
 
-        while(history[current] != -1)
-        {
-            current = history[current];
-            ++timestep;
-        }
+        double dot = Vector3.Dot(v, position);
+        v.Cross(position);
 
-        return timestep;
-    }
-
-    private static SpaceTimePoint[] ReconstructPath(int[] history, int current)
-    {
-        ArrayList<Integer> path = new ArrayList<>();
-
-        do
-        {
-            path.add(current);
-            current = history[current];
-        } while(history[current] != -1);
-
-        SpaceTimePoint[] reconstructedPath = new SpaceTimePoint[path.size()];
-
-        for(int i = 0; i < reconstructedPath.length; ++i)
-            reconstructedPath[i] = new SpaceTimePoint(path.get(path.size() - 1 - i), i);
-
-        return reconstructedPath;
-    }
-
-    public void Pathfind(Agent[] agents)
-    {
-        Hashtable<SpaceTimePoint, Agent> reservationTable = new Hashtable<>();
-        int estimatedMaxTime = 100;
-
-        for(int i = 0; i < agents.length; ++i) // Avoid the goal of other agents.
-        {
-            int goal = this.nodeToIndex.get(agents[i].goal);
-            for(int e = 0; e < estimatedMaxTime; ++e)
-            reservationTable.put(new SpaceTimePoint(goal, e), agents[i]); // @Review: maybe skip this steps because agents are allowed to collide
-        }
-
-        for(int i = 0; i < agents.length; ++i)
-        {
-            agents[i].path = CooperativeAStar(agents[i], reservationTable);
-
-            for(int s = 0; s < agents[i].path.length; ++s)
-                reservationTable.put(agents[i].path[s], agents[i]);
-        }
-    }
-
-    private SpaceTimePoint[] CooperativeAStar(Agent agent, Hashtable<SpaceTimePoint, Agent> reservationTable)
-    {
-        int[] gScore = new int[this.nodes.length];
-        float[] fScore = new float[this.nodes.length];
-
-        int[] history = new int[this.nodes.length];
-        byte[] closed = new byte[this.nodes.length]; // @Todo: add obstacles
-
-        for(int i = 0; i < this.nodes.length; ++i)
-        {
-            gScore[i] = Integer.MAX_VALUE;
-            fScore[i] = Float.POSITIVE_INFINITY;
-            history[i] = -1;
-        }
-
-        int from = this.nodeToIndex.get(agent.position);
-        int to = this.nodeToIndex.get(agent.goal);
-
-        gScore[from] = 0;
-        fScore[from] = Distance(agent.position, agent.goal);
-
-        PriorityQueue<Integer> queue = new PriorityQueue<>();
-        queue.add(from);
-
-        while(!queue.isEmpty())
-        {
-            int current = queue.poll();
-
-            if(current == to)
-                return ReconstructPath(history, current);
-
-            closed[current] = 1;
-
-            int timestep = Timestep(history, current);
-            int size = queue.size();
-
-            for(int n = 0; n < this.maxNeighbors; ++n)
-            {
-                int neighbor = this.neighbors[current + n];
-
-                if(neighbor == -1)
-                    break;
-
-                Agent reservedFor = reservationTable.getOrDefault(new SpaceTimePoint(current, timestep), null);
-
-                if(closed[neighbor] != 0 || (reservedFor != null && reservedFor != agent)) // @Review: check for collision at t + 1
-                    continue;
-
-                int gTentative = gScore[current] + 1;
-
-                if(gTentative >= gScore[neighbor])
-                    continue;
-
-                if(!queue.contains(neighbor))
-                {
-                    gScore[neighbor] = gTentative;
-                    fScore[neighbor] = gTentative + Distance(this.nodes[neighbor], agent.goal); // @Review: maybe add color score
-                    history[neighbor] = current;
-                    queue.add(neighbor);
-                }
-            }
-
-            if(size == queue.size()) // If nothing was added, insert wait node.
-            {
-                // @Todo
-            }
-        }
-
-        return new SpaceTimePoint[0];
+        return (float)Math.atan(v.Magnitude());
     }
 }

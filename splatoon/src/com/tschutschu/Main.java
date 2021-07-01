@@ -18,17 +18,37 @@ public class Main {
 
 	    int playerNum = client.getMyPlayerNumber();
 
+		client.isAlive();
+
+		World world = World.Create(client.getGraph());
+		float[] pos = client.getBotPosition(playerNum, 0);
+
+		System.out.println("Nodes: " + world.nodes.length);
+
+		Agent[] agents = new Agent[] {
+				new Agent(client.getMyPlayerNumber(), Agent.BOT_FAT)
+		};
+
+		int i = 50000;
+
+		try {Thread.sleep(500); } catch (Exception e) {}
+
+		Time.Initialize();
+
 	    while(client.isAlive())
 		{
-			World world = World.Create(client.getGraph());
-			float[] pos = client.getBotPosition(playerNum, 0);
+			Time.Update();
 
-			//client.
+			if(i % 50000 == 0) System.out.println();
+			Agent.RefreshData(client, world, agents);
+			if(i % 50000 == 0) System.out.println("Position: " + agents[0].position.x + ", " + agents[0].position.y + ", " + agents[0].position.z);
+			if(i % 50000 == 0) System.out.println("Node: " + agents[0].node.x + ", " + agents[0].node.y + ", " + agents[0].node.z);
+			Agent.Update(world, agents);
+			if(i % 50000 == 0) System.out.println("Goal: " + agents[0].goal.x + ", " + agents[0].goal.y + ", " + agents[0].goal.z);
+			if(i % 50000 == 0) System.out.println("Target: " + agents[0].path.Next(world).x + ", " + agents[0].path.Next(world).y + ", " + agents[0].path.Next(world).z);
+			Agent.SendData(client, world, agents);
 
-			System.out.println("Nodes: " + world.nodes.length);
-			System.out.println("Neighbors: " + world.neighbors.length);
-			System.out.println("Max Neighbors: " + world.maxNeighbors);
-			break;
+			++i;
 		}
     }
 }
