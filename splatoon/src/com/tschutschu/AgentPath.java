@@ -4,7 +4,7 @@ import lenz.htw.coast.world.GraphNode;
 
 public class AgentPath
 {
-    public static final float POINT_RADIUS = 0.2f;
+    public static final float POINT_RADIUS = 0.036f;
 
     public int index;
 
@@ -29,10 +29,8 @@ public class AgentPath
         GraphNode current = world.nodes[this.points[this.index].index];
         float distance = World.Distance(agent.position, current);
 
-        if(distance < POINT_RADIUS) //|| Overshoot(world, agent, current))
+        if(distance < POINT_RADIUS)
         {
-            //System.out.println("Follow next, overshoot? " + Overshoot(world, agent, current));
-
             if(this.index + 1 >= this.points.length)
                 return false;
 
@@ -40,15 +38,6 @@ public class AgentPath
         }
 
         return true;
-    }
-
-    private boolean Overshoot(World world, Agent agent, GraphNode current)
-    {
-        if(this.index <= 0)
-            return false;
-
-        GraphNode last = world.nodes[this.points[this.index - 1].index];
-        return World.Distance(current, last) < World.Distance(agent.position, last);
     }
 
     private int FindNextPathNode(World world, Agent agent, float distance)

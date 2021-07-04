@@ -2,6 +2,7 @@ package com.tschutschu;
 
 import lenz.htw.coast.*;
 import lenz.htw.coast.net.NetworkClient;
+import lenz.htw.coast.world.GraphNode;
 
 public class Main {
 
@@ -20,33 +21,32 @@ public class Main {
 
 		client.isAlive();
 
-		World world = World.Create(client.getGraph());
-		float[] pos = client.getBotPosition(playerNum, 0);
+		Player.Initialize(client);
+		World world = World.Create(client);
+		Clusters clusters = new Clusters(client, 12);
+		AgentStrategy strategy = new AgentStrategy(client, clusters);
 
-		System.out.println("Nodes: " + world.nodes.length);
+		clusters.start();
 
-		Agent[] agents = new Agent[] {
-				new Agent(client.getMyPlayerNumber(), Agent.BOT_FAT)
+		Agent[] agents = Agent.ForPlayer(playerNum);
+		Agent[] cooperative = new Agent[] {
+			agents[Bot.FAT],
+			agents[Bot.FAST]
 		};
 
-		int i = 50000;
+		int i = 30000;
 
 		try {Thread.sleep(500); } catch (Exception e) {}
 
-		Time.Initialize();
-
 	    while(client.isAlive())
 		{
-			Time.Update();
-
-			if(i % 50000 == 0) System.out.println();
-			Agent.RefreshData(client, world, agents);
-			if(i % 50000 == 0) System.out.println("Position: " + agents[0].position.x + ", " + agents[0].position.y + ", " + agents[0].position.z);
-			if(i % 50000 == 0) System.out.println("Node: " + agents[0].node.x + ", " + agents[0].node.y + ", " + agents[0].node.z);
-			Agent.Update(world, agents);
-			if(i % 50000 == 0) System.out.println("Goal: " + agents[0].goal.x + ", " + agents[0].goal.y + ", " + agents[0].goal.z);
-			if(i % 50000 == 0) System.out.println("Target: " + agents[0].path.Next(world).x + ", " + agents[0].path.Next(world).y + ", " + agents[0].path.Next(world).z);
+			world.Update(client);
+			Agent.RefreshData(world, agents);
+			Agent.UpdateCooperative(world, strategy, cooperative);
+			Agent.UpdateDirectMover(world, strategy, agents[Bot.UNSTOPPABLE]);
 			Agent.SendData(client, world, agents);
+
+			if(i % 30000 == 0) System.out.println(agents[0]);
 
 			++i;
 		}

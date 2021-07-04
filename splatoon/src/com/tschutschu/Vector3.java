@@ -1,91 +1,106 @@
 package com.tschutschu;
 
-public class Vector3
-{
+import java.util.Random;
+
+public class Vector3 {
     public float x;
 
     public float y;
 
     public float z;
 
-    public Vector3(float x, float y, float z)
-    {
+    public Vector3(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    public Vector3(Vector3 value)
-    {
+    public Vector3(Vector3 value) {
         this.x = value.x;
         this.y = value.y;
         this.z = value.z;
     }
 
-    public Vector3(float value)
-    {
+    public Vector3(float value) {
         this.x = value;
         this.y = value;
         this.z = value;
     }
 
-    public float Magnitude()
-    {
-        return (float)Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    public float Magnitude() {
+        return (float) Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
     }
 
-    public float SqrMagnitude()
-    {
+    public float SqrMagnitude() {
         return this.x * this.x + this.y * this.y + this.z * this.z;
     }
 
-    public void Set(float value)
-    {
+    public void Set(float value) {
         this.x = value;
         this.y = value;
         this.z = value;
     }
 
-    public void Set(Vector3 value)
-    {
+    public void Set(Vector3 value) {
         this.x = value.x;
         this.y = value.y;
         this.z = value.z;
     }
 
-    public void Add(Vector3 rhs)
+    public void Set(float[] values) {
+        this.x = values[0];
+        this.y = values[1];
+        this.z = values[2];
+    }
+
+    public void Set(Random random, float min, float max)
     {
+        this.x = min + random.nextFloat() * (max - min);
+        this.y = min + random.nextFloat() * (max - min);
+        this.z = min + random.nextFloat() * (max - min);
+    }
+
+    public void Add(Vector3 rhs) {
         this.x += rhs.x;
         this.y += rhs.y;
         this.z += rhs.z;
     }
 
-    public void Substract(Vector3 rhs)
+    public void Add(float x, float y, float z)
     {
+        this.x += x;
+        this.y += y;
+        this.z += z;
+    }
+
+    public void Substract(Vector3 rhs) {
         this.x -= rhs.x;
         this.y -= rhs.y;
         this.z -= rhs.z;
     }
 
-    public void Multiply(float value)
-    {
+    public void Multiply(float value) {
         this.x *= value;
         this.y *= value;
         this.z *= value;
     }
 
-    public void Devide(float value)
-    {
+    public void Devide(float value) {
         this.x /= value;
         this.y /= value;
         this.z /= value;
     }
 
-    public void Hadamard(Vector3 rhs)
-    {
+    public void Hadamard(Vector3 rhs) {
         this.x *= rhs.x;
         this.y *= rhs.y;
         this.z *= rhs.z;
+    }
+
+    public void Normalize()
+    {
+        float mag = Magnitude();
+        Devide(mag);
     }
 
     public float Distance(Vector3 rhs)
@@ -115,6 +130,10 @@ public class Vector3
         this.x = x; // Needed cause dumb java has no structs.
         this.y = y;
         this.z = z;
+    }
+
+    public String toString() {
+        return "<" + this.x + ", " + this.y + ", " + this.z + ">";
     }
 
     public static float Dot(Vector3 lhs, Vector3 rhs)

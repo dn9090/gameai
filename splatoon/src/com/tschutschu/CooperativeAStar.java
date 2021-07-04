@@ -25,12 +25,13 @@ public class CooperativeAStar
     private static SpaceTimePoint[] ReconstructPath(int[] history, int current)
     {
         ArrayList<Integer> path = new ArrayList<>();
+        path.add(current);
 
-        do
+        while(history[current] != -1)
         {
-            path.add(current);
             current = history[current];
-        } while(history[current] != -1);
+            path.add(current);
+        }
 
         SpaceTimePoint[] reconstructedPath = new SpaceTimePoint[path.size()];
 
@@ -88,7 +89,7 @@ public class CooperativeAStar
         gScore[from] = 0;
         fScore[from] = World.Distance(agent.node, agent.goal);
 
-        PriorityQueue<Integer> queue = new PriorityQueue<>(new Comparator<Integer>() {
+        PriorityQueue<Integer> queue = new PriorityQueue<>(new Comparator<>() {
             @Override
             public int compare(Integer a, Integer b) {
                 return Float.compare(fScore[a], fScore[b]);
@@ -96,9 +97,11 @@ public class CooperativeAStar
         });
         queue.add(from);
 
+        int current = from;
+
         while(!queue.isEmpty())
         {
-            int current = queue.poll();
+            current = queue.poll();
 
             if(current == to)
                 return ReconstructPath(history, current);
@@ -132,8 +135,8 @@ public class CooperativeAStar
                     history[neighbor] = current;
                     gScore[neighbor] = gTentative;
                     fScore[neighbor] = gTentative + World.Distance(nodes[neighbor], agent.goal)
-                            + world.GetBlockedNeightborShare(neighbor) * 3f
-                            + world.GetNegativeImpact(neighbor, agent.player) * 2f;
+                            + world.GetBlockedNeighborShare(neighbor) * 5f
+                            + world.GetNegativeImpact(neighbor, agent.player) * 3f;
 
                     queue.add(neighbor);
                 }
@@ -145,6 +148,8 @@ public class CooperativeAStar
             }
         }
 
-        return new SpaceTimePoint[0];
+        // No path was found, but we need somewhere to go.
+        // We are using the last result and hope that the path will be reevaluated in the future.
+        return ReconstructPath(history, current);
     }
 }
