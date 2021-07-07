@@ -34,9 +34,7 @@ public class Main {
 			agents[Bot.FAST]
 		};
 
-		int i = 30000;
-
-		try {Thread.sleep(500); } catch (Exception e) {}
+		//try {Thread.sleep(500); } catch (Exception e) {}
 
 	    while(client.isAlive())
 		{
@@ -46,9 +44,6 @@ public class Main {
 			Agent.UpdateDirectMover(world, strategy, agents[Bot.UNSTOPPABLE]);
 			Agent.SendData(client, world, agents);
 
-			if(i % 30000 == 0) System.out.println(agents[0]);
-
-			++i;
 		}
     }
 }

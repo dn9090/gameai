@@ -91,7 +91,7 @@ public class Agent
 
             if(!follow || agents[i].ReachedTarget())
             {
-                System.out.println("Reached Target! " + agents[i].bot);
+                //System.out.println("Reached Target! " + agents[i].bot);
                 agents[i].goal = strategy.GetGoal(world, agents[i]);
                 pathPlanning = true;
             }
@@ -108,12 +108,16 @@ public class Agent
 
     public static void UpdateDirectMover(World world, AgentStrategy strategy, Agent agent)
     {
-        if(agent.goal == null || agent.ReachedTarget() || World.Distance(agent.position, agent.node) < AgentPath.POINT_RADIUS)
+        if(agent.goal == null)
             agent.goal = strategy.GetDefaultGoal(world, agent);
 
-        //boolean follow = agent.path.Follow(world, agent);
+        boolean follow = agent.path.Follow(world, agent);
 
-        //if(!follow)
-         //   agent.path.Restart(SimplePath.ScanNearby(world, agent));
+        if(!follow || agent.ReachedTarget())
+        {
+            //System.out.println("Reached Target! " + agent.bot);
+            agent.goal = strategy.GetDefaultGoal(world, agent);
+            agent.path.Restart(SimplePath.ScanNearby(world, agent));
+        }
     }
 }

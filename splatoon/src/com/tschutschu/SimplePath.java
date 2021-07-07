@@ -11,7 +11,7 @@ public class SimplePath
         if(distance < 3f * AgentPath.POINT_RADIUS)
             return null;
 
-        GraphNode a = ScanNextDepth(agent, distance, agent.node);
+        GraphNode a = ScanNextDepth(agent, distance, agent.goal);
 
         if(a == null)
             return null;
@@ -27,9 +27,10 @@ public class SimplePath
             return null;
 
         return new SpaceTimePoint[] {
-                new SpaceTimePoint(world.nodeToIndex.get(a), 1),
-                new SpaceTimePoint(world.nodeToIndex.get(b), 1),
-                new SpaceTimePoint(world.nodeToIndex.get(c), 1)
+                new SpaceTimePoint(world.nodeToIndex.get(c), 1),
+                new SpaceTimePoint(world.nodeToIndex.get(b), 2),
+                new SpaceTimePoint(world.nodeToIndex.get(a), 3),
+                new SpaceTimePoint(world.nodeToIndex.get(agent.goal), 4)
         };
     }
 
